@@ -1,0 +1,519 @@
+<%- include('../partials/header-standalone') %>
+
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h3 class="text-2xl font-bold text-gray-800">DNS Server Monitoring</h3>
+        <p class="text-gray-600 mt-1">Real-time monitoring of Bind DNS server and system resources</p>
+    </div>
+    <div class="flex gap-2">
+        <button onclick="refreshStats()" class="btn-sm btn-primary">
+            <i class="fas fa-sync-alt mr-1" id="refresh-icon"></i>
+            Refresh
+        </button>
+        <span class="text-sm text-gray-600 flex items-center">
+            <i class="fas fa-circle text-green-500 mr-2 animate-pulse"></i>
+            Auto-refresh: <span id="countdown" class="ml-1 font-semibold">30s</span>
+        </span>
+    </div>
+</div>
+
+<!-- Status Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Bind Status -->
+    <div class="stat-card <%= bind.running ? 'border-green-500' : 'border-red-500' %>">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Bind Status</p>
+                <p class="text-2xl font-bold <%= bind.running ? 'text-green-600' : 'text-red-600' %>">
+                    <%= bind.running ? 'Running' : 'Stopped' %>
+                </p>
+            </div>
+            <div class="w-12 h-12 <%= bind.running ? 'bg-green-100' : 'bg-red-100' %> rounded-full flex items-center justify-center">
+                <i class="fas <%= bind.running ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-600' %> text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Uptime: <%= bind.uptime %></p>
+    </div>
+
+    <!-- Zones -->
+    <div class="stat-card border-blue-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Total Zones</p>
+                <p class="text-2xl font-bold text-blue-600"><%= zones.total %></p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-globe text-blue-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Loaded: <%= zones.loaded %> | Errors: <%= zones.error %></p>
+    </div>
+
+    <!-- Memory Usage -->
+    <div class="stat-card border-purple-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Memory Usage</p>
+                <p class="text-2xl font-bold text-purple-600"><%= system.memory?.percent %>%</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-memory text-purple-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2"><%= system.memory?.used %> / <%= system.memory?.total %></p>
+    </div>
+
+    <!-- Query Stats -->
+    <div class="stat-card border-orange-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Total Queries</p>
+                <p class="text-2xl font-bold text-orange-600"><%= queries.total || 0 %></p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-chart-line text-orange-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Success: <%= queries.success || 0 %> | Failed: <%= queries.failure || 0 %></p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Bind Server Details -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-server mr-2 text-blue-600"></i>
+                Bind Server Details
+            </h4>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600">Version</p>
+                    <p class="text-sm font-semibold text-gray-800"><%= bind.version %></p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600">Status</p>
+                    <p class="text-sm font-semibold <%= bind.running ? 'text-green-600' : 'text-red-600' %>">
+                        <i class="fas fa-circle text-xs mr-1"></i>
+                        <%= bind.running ? 'Active' : 'Inactive' %>
+                    </p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600">Uptime</p>
+                    <p class="text-sm font-semibold text-gray-800"><%= bind.uptime %></p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600">Last Check</p>
+                    <p class="text-sm font-semibold text-gray-800">
+                        <%= new Date(bind.lastCheck).toLocaleTimeString() %>
+                    </p>
+                </div>
+            </div>
+
+            <% if (bind.stats && Object.keys(bind.stats).length > 0) { %>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm font-semibold text-gray-700 mb-3">Statistics</p>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="text-center p-2 bg-blue-50 rounded">
+                        <p class="text-lg font-bold text-blue-600"><%= bind.stats.queries || 0 %></p>
+                        <p class="text-xs text-gray-600">Queries</p>
+                    </div>
+                    <div class="text-center p-2 bg-green-50 rounded">
+                        <p class="text-lg font-bold text-green-600"><%= bind.stats.responses || 0 %></p>
+                        <p class="text-xs text-gray-600">Responses</p>
+                    </div>
+                    <div class="text-center p-2 bg-red-50 rounded">
+                        <p class="text-lg font-bold text-red-600"><%= bind.stats.errors || 0 %></p>
+                        <p class="text-xs text-gray-600">Errors</p>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+
+        <!-- Query Statistics -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-bar mr-2 text-green-600"></i>
+                Query Statistics
+            </h4>
+            
+            <% if (queries.queryTypes && Object.keys(queries.queryTypes).length > 0) { %>
+            <div class="space-y-3">
+                <% Object.entries(queries.queryTypes).forEach(([type, count]) => { 
+                    const total = queries.total || 1;
+                    const percent = ((count / total) * 100).toFixed(1);
+                %>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-medium text-gray-700"><%= type %></span>
+                        <span class="text-gray-600"><%= count %> (<%= percent %>%)</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: <%= percent %>%"></div>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <% } else { %>
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-chart-bar text-4xl mb-2"></i>
+                <p>No query statistics available</p>
+                <p class="text-xs mt-1">Statistics will appear after DNS queries are processed</p>
+            </div>
+            <% } %>
+        </div>
+
+        <!-- Zones Status -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-list mr-2 text-indigo-600"></i>
+                Zones Status
+                <span class="text-sm font-normal text-gray-600 ml-2">
+                    (<%= zones.total %> total)
+                </span>
+            </h4>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Zone</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Type</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Status</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Serial</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Records</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <% if (zones.zones && zones.zones.length > 0) { %>
+                            <% zones.zones.forEach(zone => { %>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 text-sm font-medium text-gray-800">
+                                    <i class="fas fa-globe text-blue-600 mr-2"></i>
+                                    <%= zone.name %>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-600">
+                                    <span class="px-2 py-1 text-xs rounded <%= zone.type === 'master' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' %>">
+                                        <%= zone.type %>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 text-sm">
+                                    <% if (zone.status === 'loaded') { %>
+                                        <span class="text-green-600">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Loaded
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-red-600">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            Error
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-600 font-mono">
+                                    <%= zone.serial %>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-600">
+                                    <%= zone.records || 0 %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                    <i class="fas fa-inbox text-3xl mb-2"></i>
+                                    <p>No zones configured</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-file-alt mr-2 text-yellow-600"></i>
+                Recent Logs
+                <span class="text-sm font-normal text-gray-600 ml-2">
+                    (Last 50 entries)
+                </span>
+            </h4>
+            
+            <div class="space-y-2 max-h-96 overflow-y-auto" id="logs-container">
+                <% if (logs && logs.length > 0) { %>
+                    <% logs.forEach(log => { %>
+                    <div class="p-3 rounded <%= log.level === 'error' ? 'bg-red-50 border-l-4 border-red-500' : log.level === 'warning' ? 'bg-yellow-50 border-l-4 border-yellow-500' : 'bg-gray-50 border-l-4 border-gray-300' %>">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-600 mb-1">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    <%= log.timestamp %>
+                                    <span class="ml-2">
+                                        <i class="fas fa-server mr-1"></i>
+                                        <%= log.host %>
+                                    </span>
+                                </p>
+                                <p class="text-sm text-gray-800 font-mono"><%= log.message %></p>
+                            </div>
+                            <span class="ml-2 px-2 py-1 text-xs rounded <%= log.level === 'error' ? 'bg-red-200 text-red-800' : log.level === 'warning' ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-200 text-gray-800' %>">
+                                <%= log.level %>
+                            </span>
+                        </div>
+                    </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-file-alt text-4xl mb-2"></i>
+                        <p>No logs available</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="space-y-6">
+        <!-- System Resources -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-microchip mr-2 text-purple-600"></i>
+                System Resources
+            </h4>
+            
+            <div class="space-y-4">
+                <!-- Hostname -->
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600">Hostname</p>
+                    <p class="text-sm font-semibold text-gray-800"><%= system.hostname %></p>
+                </div>
+
+                <!-- Platform -->
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600">Platform</p>
+                    <p class="text-sm font-semibold text-gray-800"><%= system.platform %></p>
+                </div>
+
+                <!-- Uptime -->
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600">System Uptime</p>
+                    <p class="text-sm font-semibold text-gray-800"><%= system.uptime %></p>
+                </div>
+
+                <!-- CPU -->
+                <% if (system.cpu) { %>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600 mb-2">CPU Load Average</p>
+                    <div class="flex gap-2">
+                        <% system.cpu.load.forEach((load, i) => { %>
+                        <div class="flex-1 text-center p-2 bg-white rounded">
+                            <p class="text-lg font-bold text-purple-600"><%= load %></p>
+                            <p class="text-xs text-gray-600"><%= ['1m', '5m', '15m'][i] %></p>
+                        </div>
+                        <% }); %>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <%= system.cpu.cores %> cores - <%= system.cpu.model %>
+                    </p>
+                </div>
+                <% } %>
+
+                <!-- Memory -->
+                <% if (system.memory) { %>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600 mb-2">Memory Usage</p>
+                    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                        <div class="bg-purple-600 h-4 rounded-full flex items-center justify-center text-xs text-white font-semibold" 
+                             style="width: <%= system.memory.percent %>%">
+                            <%= system.memory.percent %>%
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600">
+                        <%= system.memory.used %> used of <%= system.memory.total %>
+                    </p>
+                </div>
+                <% } %>
+
+                <!-- Disk -->
+                <% if (system.disk && system.disk.total) { %>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600 mb-2">Disk Usage (/etc/bind)</p>
+                    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                        <div class="bg-blue-600 h-4 rounded-full flex items-center justify-center text-xs text-white font-semibold" 
+                             style="width: <%= system.disk.percent %>">
+                            <%= system.disk.percent %>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600">
+                        <%= system.disk.used %> used of <%= system.disk.total %>
+                    </p>
+                </div>
+                <% } %>
+
+                <!-- Network -->
+                <% if (system.network && system.network.interface) { %>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-xs text-gray-600 mb-2">Network (<%= system.network.interface %>)</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="text-center p-2 bg-white rounded">
+                            <p class="text-sm font-bold text-green-600"><%= system.network.received %></p>
+                            <p class="text-xs text-gray-600">RX</p>
+                        </div>
+                        <div class="text-center p-2 bg-white rounded">
+                            <p class="text-sm font-bold text-blue-600"><%= system.network.transmitted %></p>
+                            <p class="text-xs text-gray-600">TX</p>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-bolt mr-2 text-yellow-600"></i>
+                Quick Actions
+            </h4>
+            
+            <div class="space-y-2">
+                <button onclick="reloadBind()" class="btn btn-primary w-full">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Reload Bind
+                </button>
+                
+                <a href="/zones" class="btn w-full block text-center">
+                    <i class="fas fa-globe mr-2"></i>
+                    Manage Zones
+                </a>
+                
+                <a href="/settings" class="btn w-full block text-center">
+                    <i class="fas fa-cog mr-2"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let autoRefreshInterval;
+let countdownInterval;
+let countdownSeconds = 30;
+
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+});
+
+function startAutoRefresh() {
+    // Clear existing intervals
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    if (countdownInterval) clearInterval(countdownInterval);
+    
+    // Reset countdown
+    countdownSeconds = 30;
+    
+    // Auto refresh every 30 seconds
+    autoRefreshInterval = setInterval(() => {
+        refreshStats();
+        countdownSeconds = 30;
+    }, 30000);
+    
+    // Update countdown every second
+    countdownInterval = setInterval(() => {
+        countdownSeconds--;
+        document.getElementById('countdown').textContent = countdownSeconds + 's';
+        
+        if (countdownSeconds <= 0) {
+            countdownSeconds = 30;
+        }
+    }, 1000);
+}
+
+async function refreshStats() {
+    const icon = document.getElementById('refresh-icon');
+    icon.classList.add('fa-spin');
+    
+    try {
+        const response = await fetch('/monitoring/api/stats');
+        const result = await response.json();
+        
+        if (result.success) {
+            // Reload page to update all data
+            window.location.reload();
+        } else {
+            showNotification('Failed to refresh stats', 'error');
+        }
+    } catch (error) {
+        console.error('Error refreshing stats:', error);
+        showNotification('Failed to refresh stats', 'error');
+    } finally {
+        setTimeout(() => icon.classList.remove('fa-spin'), 1000);
+    }
+}
+
+async function reloadBind() {
+    if (!confirm('Reload Bind DNS server?')) return;
+    
+    try {
+        const response = await fetch('/zones/reload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            setTimeout(() => refreshStats(), 2000);
+        } else {
+            showNotification(result.error || 'Failed to reload Bind', 'error');
+        }
+    } catch (error) {
+        console.error('Error reloading Bind:', error);
+        showNotification('Failed to reload Bind', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500'
+    };
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+    notification.innerHTML = `<i class="fas ${icons[type]} mr-2"></i>${message}`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
+
+// Cleanup intervals when page is unloaded
+window.addEventListener('beforeunload', function() {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    if (countdownInterval) clearInterval(countdownInterval);
+});
+</script>
+
+<style>
+.stat-card {
+    @apply bg-white rounded-lg shadow p-6 border-l-4;
+}
+</style>
+
+<%- include('../partials/footer-standalone') %>

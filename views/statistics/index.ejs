@@ -1,0 +1,433 @@
+<%- include('../partials/header-standalone') %>
+
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h3 class="text-2xl font-bold text-gray-800">DNS Statistics</h3>
+        <p class="text-gray-600 mt-1">Comprehensive analytics and insights for your DNS infrastructure</p>
+    </div>
+    <button onclick="refreshStats()" class="btn-sm btn-primary">
+        <i class="fas fa-sync-alt mr-1" id="refresh-icon"></i>
+        Refresh
+    </button>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Total Zones -->
+    <div class="stat-card border-blue-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Total Zones</p>
+                <p class="text-3xl font-bold text-blue-600"><%= zoneStats.total %></p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-globe text-blue-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            <%= zoneStats.forward %> forward • <%= zoneStats.reverse %> reverse
+        </p>
+    </div>
+
+    <!-- Total Records -->
+    <div class="stat-card border-green-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Total Records</p>
+                <p class="text-3xl font-bold text-green-600"><%= recordStats.total %></p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-list text-green-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            Across <%= zoneStats.total %> zones
+        </p>
+    </div>
+
+    <!-- Record Types -->
+    <div class="stat-card border-purple-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Record Types</p>
+                <p class="text-3xl font-bold text-purple-600"><%= recordStats.byType.length %></p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-layer-group text-purple-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            Different record types
+        </p>
+    </div>
+
+    <!-- Activities -->
+    <div class="stat-card border-orange-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Total Activities</p>
+                <p class="text-3xl font-bold text-orange-600"><%= activityStats.total %></p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-history text-orange-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            <%= activityStats.today %> today • <%= activityStats.thisWeek %> this week
+        </p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column (2/3) -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Zone Statistics -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-globe mr-2 text-blue-600"></i>
+                Zone Statistics
+            </h4>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <p class="text-3xl font-bold text-blue-600"><%= zoneStats.master %></p>
+                    <p class="text-sm text-gray-600 mt-1">Master Zones</p>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <p class="text-3xl font-bold text-gray-600"><%= zoneStats.slave %></p>
+                    <p class="text-sm text-gray-600 mt-1">Slave Zones</p>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <p class="text-3xl font-bold text-green-600"><%= zoneStats.forward %></p>
+                    <p class="text-sm text-gray-600 mt-1">Forward Zones</p>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <p class="text-3xl font-bold text-purple-600"><%= zoneStats.reverse %></p>
+                    <p class="text-sm text-gray-600 mt-1">Reverse Zones</p>
+                </div>
+            </div>
+
+            <div class="border-t pt-4">
+                <h5 class="text-sm font-semibold text-gray-700 mb-3">Zone Distribution</h5>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Master Zones</span>
+                        <div class="flex items-center">
+                            <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                                <div class="h-2 bg-blue-600 rounded-full" style="width: <%= (zoneStats.master / zoneStats.total * 100).toFixed(0) %>%"></div>
+                            </div>
+                            <span class="font-semibold text-gray-700"><%= (zoneStats.master / zoneStats.total * 100).toFixed(0) %>%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Forward Zones</span>
+                        <div class="flex items-center">
+                            <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                                <div class="h-2 bg-green-600 rounded-full" style="width: <%= (zoneStats.forward / zoneStats.total * 100).toFixed(0) %>%"></div>
+                            </div>
+                            <span class="font-semibold text-gray-700"><%= (zoneStats.forward / zoneStats.total * 100).toFixed(0) %>%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Reverse Zones</span>
+                        <div class="flex items-center">
+                            <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                                <div class="h-2 bg-purple-600 rounded-full" style="width: <%= (zoneStats.reverse / zoneStats.total * 100).toFixed(0) %>%"></div>
+                            </div>
+                            <span class="font-semibold text-gray-700"><%= (zoneStats.reverse / zoneStats.total * 100).toFixed(0) %>%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Record Type Distribution -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-pie mr-2 text-green-600"></i>
+                Record Type Distribution
+            </h4>
+            
+            <div class="space-y-3">
+                <% if (recordStats.byType.length > 0) { %>
+                    <% recordStats.byType.forEach((stat, index) => { 
+                        const colors = ['blue', 'green', 'purple', 'orange', 'indigo', 'pink', 'red', 'yellow'];
+                        const color = colors[index % colors.length];
+                    %>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium text-gray-700">
+                                <i class="fas fa-circle text-<%= color %>-600 text-xs mr-2"></i>
+                                <%= stat.type %>
+                            </span>
+                            <span class="text-gray-600">
+                                <%= stat.count %> records (<%= stat.percentage %>%)
+                            </span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-<%= color %>-600 h-2 rounded-full transition-all" style="width: <%= stat.percentage %>%"></div>
+                        </div>
+                    </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-chart-pie text-4xl mb-2"></i>
+                        <p>No record data available</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Activity Timeline -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-line mr-2 text-indigo-600"></i>
+                Activity Timeline (Last 7 Days)
+            </h4>
+            
+            <div class="space-y-2">
+                <% activityTimeline.forEach(day => { 
+                    const maxCount = Math.max(...activityTimeline.map(d => d.count), 1);
+                    const barWidth = (day.count / maxCount * 100).toFixed(0);
+                %>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-600 w-16"><%= day.date %></span>
+                    <div class="flex-1 h-8 bg-gray-200 rounded-lg relative overflow-hidden">
+                        <div class="h-full bg-indigo-600 rounded-lg flex items-center px-2" style="width: <%= barWidth %>%">
+                            <span class="text-xs text-white font-semibold"><%= day.count %></span>
+                        </div>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-indigo-600"><%= activityStats.today %></p>
+                    <p class="text-xs text-gray-600">Today</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-blue-600"><%= activityStats.thisWeek %></p>
+                    <p class="text-xs text-gray-600">This Week</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-green-600"><%= activityStats.thisMonth %></p>
+                    <p class="text-xs text-gray-600">This Month</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Zones by Record Count -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-trophy mr-2 text-yellow-600"></i>
+                Top Zones by Record Count
+            </h4>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">#</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Zone Name</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Type</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Records</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-600">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <% if (topZones.length > 0) { %>
+                            <% topZones.forEach((zone, index) => { %>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm text-gray-600"><%= index + 1 %></td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-800">
+                                    <i class="fas fa-globe text-blue-600 mr-2"></i>
+                                    <%= zone.name %>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    <span class="px-2 py-1 text-xs rounded <%= zone.type === 'master' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' %>">
+                                        <%= zone.type %>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-800">
+                                    <%= zone.records %>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    <a href="/zones/<%= zone.name %>" class="text-blue-600 hover:text-blue-700">
+                                        View →
+                                    </a>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                    <i class="fas fa-inbox text-3xl mb-2"></i>
+                                    <p>No zones found</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column (1/3) -->
+    <div class="space-y-6">
+        <!-- Growth Statistics -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-area mr-2 text-green-600"></i>
+                Growth (Last 30 Days)
+            </h4>
+            
+            <div class="space-y-4">
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-600">New Zones</span>
+                        <i class="fas fa-globe text-green-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-green-600"><%= growth.zonesLastMonth %></p>
+                    <p class="text-xs text-gray-600 mt-1">zones created</p>
+                </div>
+
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-600">New Records</span>
+                        <i class="fas fa-list text-blue-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-blue-600"><%= growth.recordsLastMonth %></p>
+                    <p class="text-xs text-gray-600 mt-1">records added</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity by Type -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-tasks mr-2 text-purple-600"></i>
+                Activity by Type
+            </h4>
+            
+            <div class="space-y-3">
+                <% Object.entries(activityByType).forEach(([type, count]) => { 
+                    const total = Object.values(activityByType).reduce((sum, c) => sum + c, 0);
+                    const percentage = (count / total * 100).toFixed(0);
+                    const colors = {
+                        'Created': 'green',
+                        'Modified': 'blue',
+                        'Deleted': 'red',
+                        'Updated': 'yellow',
+                        'Added': 'indigo'
+                    };
+                    const color = colors[type] || 'gray';
+                %>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-medium text-gray-700"><%= type %></span>
+                        <span class="text-gray-600"><%= count %></span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-<%= color %>-600 h-2 rounded-full" style="width: <%= percentage %>%"></div>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-history mr-2 text-orange-600"></i>
+                Recent Activities
+            </h4>
+            
+            <div class="space-y-3 max-h-96 overflow-y-auto">
+                <% activityStats.recentActivities.forEach(activity => { %>
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-medium text-gray-800"><%= activity.action %></p>
+                    <p class="text-xs text-gray-600 mt-1"><%= activity.description %></p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <%= moment(activity.timestamp).fromNow() %>
+                    </p>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-bolt mr-2 text-yellow-600"></i>
+                Quick Actions
+            </h4>
+            
+            <div class="space-y-2">
+                <a href="/zones/new/create" class="btn btn-primary w-full">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create Zone
+                </a>
+                
+                <a href="/zones" class="btn w-full">
+                    <i class="fas fa-globe mr-2"></i>
+                    View All Zones
+                </a>
+                
+                <a href="/monitoring" class="btn w-full">
+                    <i class="fas fa-chart-bar mr-2"></i>
+                    Monitoring
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function refreshStats() {
+    const icon = document.getElementById('refresh-icon');
+    icon.classList.add('fa-spin');
+    
+    try {
+        // Reload page to refresh all stats
+        window.location.reload();
+    } catch (error) {
+        console.error('Error refreshing stats:', error);
+        showNotification('Failed to refresh statistics', 'error');
+    } finally {
+        setTimeout(() => icon.classList.remove('fa-spin'), 1000);
+    }
+}
+
+function showNotification(message, type) {
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500'
+    };
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+    notification.innerHTML = `<i class="fas ${icons[type]} mr-2"></i>${message}`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
+</script>
+
+<style>
+.stat-card {
+    @apply bg-white rounded-lg shadow p-6 border-l-4;
+}
+</style>
+
+<%- include('../partials/footer-standalone') %>

@@ -9,8 +9,23 @@ router.get('/', async (req, res) => {
         // Get zones from Bind
         const zones = await bindService.listZones();
         
-        // Calculate statistics
+        // Calculate statistics with actual record counts
         const totalRecords = zones.reduce((sum, zone) => sum + zone.records, 0);
+        
+        // Get actual record types from zones
+        const recordsByType = {};
+        for (const zone of zones) {
+            try {
+                const zoneData = await bindService.getZone(zone.name);
+                const records = zoneData.records || [];
+                records.forEach(record => {
+                    const type = record.type || 'OTHER';
+                    recordsByType[type] = (recordsByType[type] || 0) + 1;
+                });
+            } catch (error) {
+                console.error(`Error getting records for ${zone.name}:`, error.message);
+            }
+        }
         
         const stats = {
             totalZones: zones.length,
@@ -21,16 +36,6 @@ router.get('/', async (req, res) => {
 
         // Get Bind status
         const bindStatus = await bindService.getBindStatus();
-
-        // Group records by type (simplified - would need to parse all zones for accurate count)
-        const recordsByType = {
-            'A': 0,
-            'AAAA': 0,
-            'CNAME': 0,
-            'MX': 0,
-            'TXT': 0,
-            'NS': 0
-        };
 
         res.render('dashboard', {
             title: 'NDash - Bind DNS Dashboard',

@@ -39,6 +39,12 @@ router.post('/', async (req, res) => {
     try {
         const { autoReload, validateBeforeReload, backupEnabled, autoGeneratePTR } = req.body;
         
+        console.log('Received POST data:', req.body);
+        console.log('autoReload:', autoReload, '=', autoReload === 'on');
+        console.log('validateBeforeReload:', validateBeforeReload, '=', validateBeforeReload === 'on');
+        console.log('backupEnabled:', backupEnabled, '=', backupEnabled === 'on');
+        console.log('autoGeneratePTR:', autoGeneratePTR, '=', autoGeneratePTR === 'on');
+        
         // Update settings
         const updates = {
             zones: {
