@@ -199,4 +199,52 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+// POST /adblock/source/toggle/:sourceKey - Toggle individual source
+router.post('/source/toggle/:sourceKey', async (req, res) => {
+    try {
+        const { sourceKey } = req.params;
+        const settings = await loadSettings();
+        
+        // Initialize adblock settings if not exists
+        if (!settings.adblock) {
+            settings.adblock = DEFAULT_SETTINGS.adblock;
+        }
+        
+        // Initialize sources if not exists
+        if (!settings.adblock.sources) {
+            settings.adblock.sources = DEFAULT_SETTINGS.adblock.sources;
+        }
+        
+        // Toggle the source
+        if (settings.adblock.sources[sourceKey] !== undefined) {
+            settings.adblock.sources[sourceKey] = !settings.adblock.sources[sourceKey];
+            
+            // Save settings
+            await saveSettings(settings);
+            
+            // Regenerate adblock config if adblock is enabled
+            if (settings.adblock.enabled) {
+                await adblock.applyAdblockConfig();
+            }
+            
+            res.json({
+                success: true,
+                enabled: settings.adblock.sources[sourceKey],
+                message: `${sourceKey} ${settings.adblock.sources[sourceKey] ? 'enabled' : 'disabled'}`
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: `Unknown source: ${sourceKey}`
+            });
+        }
+    } catch (error) {
+        console.error('Error toggling source:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

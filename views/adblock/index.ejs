@@ -312,6 +312,37 @@ async function updateBlocklists() {
     }
 }
 
+// Toggle individual source
+async function toggleSource(sourceKey) {
+    const btn = document.querySelector(`button[data-source="${sourceKey}"]`);
+    const originalHTML = btn.innerHTML;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Processing...';
+        
+        const response = await fetch(`/adblock/source/toggle/${sourceKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('Error toggling source:', error);
+        showNotification('Failed to toggle source: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
 // Add to whitelist
 document.getElementById('whitelistForm').addEventListener('submit', async function(e) {
     e.preventDefault();
