@@ -29,10 +29,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const dashboardRoutes = require('./routes/dashboard');
 const zonesRoutes = require('./routes/zones');
 const recordsRoutes = require('./routes/records');
+const settingsRoutes = require('./routes/settings');
 
 app.use('/', dashboardRoutes);
 app.use('/zones', zonesRoutes);
 app.use('/records', recordsRoutes);
+app.use('/settings', settingsRoutes);
 
 // Initialize Bind service and start server
 async function startServer() {
