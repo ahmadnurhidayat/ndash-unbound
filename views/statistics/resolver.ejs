@@ -208,10 +208,54 @@
                 Total unique queries in this period: <strong><%= topDomains.total.toLocaleString() %></strong>
             </div>
         <% } else { %>
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-search text-4xl mb-4"></i>
-                <p>No query data available</p>
-                <p class="text-sm mt-2">Enable query logging in resolver settings to see top domains</p>
+            <div class="text-center py-12">
+                <div class="inline-block p-4 bg-yellow-50 rounded-full mb-4">
+                    <i class="fas fa-exclamation-circle text-yellow-500 text-5xl"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-700 mb-2">No Query Logs Found</h4>
+                <p class="text-gray-600 mb-4 max-w-lg mx-auto">
+                    To track and display the most queried domains, query logging must be enabled in the resolver configuration.
+                </p>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto text-left">
+                    <div class="flex items-start mb-3">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <div class="flex-1">
+                            <h5 class="font-semibold text-blue-900 mb-2">How to enable query logging:</h5>
+                            <ol class="text-sm text-blue-800 space-y-2 ml-4 list-decimal">
+                                <li>Go to <a href="/settings" class="underline font-medium hover:text-blue-600">Settings page</a></li>
+                                <li>Navigate to the <strong>Resolver Configuration</strong> section</li>
+                                <li>Under <strong>Logging Options</strong>, enable <strong>"Log Queries"</strong></li>
+                                <li>Click <strong>Save Settings</strong> to apply the changes</li>
+                                <li>Wait a few minutes for queries to be logged</li>
+                                <li>Refresh this page to see the top queried domains</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                
+                <% if (topDomains.error) { %>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl mx-auto mt-4 text-left">
+                    <div class="flex items-start">
+                        <i class="fas fa-times-circle text-red-500 mt-1 mr-3"></i>
+                        <div class="flex-1">
+                            <h5 class="font-semibold text-red-900 mb-1">Error Details:</h5>
+                            <p class="text-sm text-red-800"><%= topDomains.error %></p>
+                            <p class="text-xs text-red-700 mt-2">
+                                <strong>Note:</strong> The application may not have permission to read system logs. 
+                                Ensure the user running NDash has access to read journal logs or is in the 'systemd-journal' group.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+                
+                <div class="mt-6">
+                    <a href="/settings" class="btn btn-primary">
+                        <i class="fas fa-cog mr-2"></i>
+                        Go to Settings
+                    </a>
+                </div>
             </div>
         <% } %>
     </div>

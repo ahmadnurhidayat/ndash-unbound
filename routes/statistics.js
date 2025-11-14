@@ -207,50 +207,67 @@ async function getTopQueriedDomains(limit = 20) {
         const { exec } = require('child_process');
         const { promisify } = require('util');
         const execAsync = promisify(exec);
-        
-        // Get recent unbound queries from journalctl
-        // Format: "Nov 14 08:07:41 ndash-unbound unbound[11170]: [11170:1] info: 127.0.0.1 facebook.com. A IN"
-        // Extract domain (field 4 after the colon separator)
+
+        // Read recent unbound logs from journalctl (no sudo to avoid password prompts).
+        // Use `-o cat` to get only the message part and be resilient to syslog header changes.
+        // Limit to last 10000 lines to avoid buffer overflow on busy servers.
         const { stdout } = await execAsync(
-            `sudo journalctl -u unbound --since "30 minutes ago" --no-pager | ` +
-            `grep "info: 127.0.0.1" | ` +
-            `awk -F': ' '{print $NF}' | ` +
-            `awk '{print $2}' | ` +
-            `sed 's/\\.$//' | ` +
-            `grep -v "in-addr.arpa" | ` +
-            `grep -v "ip6.arpa" | ` +
-            `grep -v "^_" | ` +
-            `grep -v "^$" | ` +
-            `sort | uniq -c | sort -rn | head -${limit}`
+            `journalctl -u unbound --since "30 minutes ago" --no-pager -o cat -n 10000`,
+            { maxBuffer: 5 * 1024 * 1024 } // 5MB buffer
         );
-        
-        const domains = [];
-        const lines = stdout.trim().split('\n').filter(line => line.trim());
-        
+
+        const counts = new Map();
+        const lines = stdout.split('\n');
+
+        // Regex to find FQDN-like tokens (with optional trailing dot)
+        const domainRegex = /([A-Za-z0-9-_]+(?:\.[A-Za-z0-9-_]+)+\.?)/g;
+
         for (const line of lines) {
-            const match = line.trim().match(/^\s*(\d+)\s+(.+)$/);
-            if (match) {
-                const domain = match[2].trim();
-                // Additional filtering
-                if (domain && domain.length > 0 && !domain.startsWith('_')) {
-                    domains.push({
-                        domain: domain,
-                        count: parseInt(match[1]),
-                        percentage: 0 // Will calculate after
-                    });
-                }
+            if (!line || line.indexOf('info:') === -1) continue; // only interested in info-level query lines
+
+            // Find all candidate tokens
+            const matches = line.match(domainRegex);
+            if (!matches) continue;
+
+            // Choose the most likely token: the first token that is not an IP and not a reverse lookup
+            let picked = null;
+            for (const tok of matches) {
+                const t = tok.trim();
+                if (!t) continue;
+                // skip tokens that look like IP addresses
+                if (/^[0-9.]+$/.test(t)) continue;
+                // skip in-addr.arpa / ip6.arpa
+                if (/in-addr\.arpa$/.test(t) || /ip6\.arpa$/.test(t)) continue;
+                // skip tokens that start with underscore
+                if (t.startsWith('_')) continue;
+                picked = t;
+                break;
             }
+
+            if (!picked) continue;
+
+            // normalize (remove trailing dot, lowercase)
+            const domain = picked.replace(/\.$/, '').toLowerCase();
+            if (!domain) continue;
+
+            counts.set(domain, (counts.get(domain) || 0) + 1);
         }
-        
-        // Calculate percentages
-        const total = domains.reduce((sum, d) => sum + d.count, 0);
-        domains.forEach(d => {
-            d.percentage = total > 0 ? ((d.count / total) * 100).toFixed(1) : 0;
-        });
-        
+
+        // Convert map to sorted array
+        const total = Array.from(counts.values()).reduce((s, v) => s + v, 0);
+        const domains = Array.from(counts.entries())
+            .map(([domain, count]) => ({ domain, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, limit)
+            .map(d => ({
+                domain: d.domain,
+                count: d.count,
+                percentage: total > 0 ? ((d.count / total) * 100).toFixed(1) : 0
+            }));
+
         return {
-            domains: domains.slice(0, limit),
-            total: total,
+            domains,
+            total,
             timeRange: '30 minutes'
         };
     } catch (error) {
