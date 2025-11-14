@@ -1,15 +1,16 @@
-# NDash - Bind DNS Management Dashboard
+# NDash - Unbound DNS Management Dashboard
 
-NDash adalah aplikasi web untuk mengelola DNS Bind dengan antarmuka yang modern dan mudah digunakan. Aplikasi ini dibangun dengan Express.js backend dan EJS templating, dengan desain yang terinspirasi dari IDVE.
+NDash adalah aplikasi web untuk mengelola Unbound DNS dengan antarmuka yang modern dan mudah digunakan. Aplikasi ini dibangun dengan Express.js backend dan EJS templating, dengan desain yang terinspirasi dari IDVE.
 
 ## Fitur
 
 - 📊 **Dashboard Informatif** - Tampilan statistik DNS zone dan records
-- 🌐 **Manajemen DNS Zones** - Buat, lihat, edit, dan hapus DNS zones
+- 🌐 **Manajemen DNS Zones** - Buat, lihat, edit, dan hapus DNS local zones
 - 📝 **Manajemen DNS Records** - Kelola berbagai tipe DNS records (A, AAAA, CNAME, MX, TXT, dll)
 - 🎨 **UI Modern** - Desain responsif dengan Tailwind CSS dan Shadcn-UI inspired
 - ⚡ **Quick Actions** - Akses cepat ke fungsi-fungsi umum
 - 📱 **Responsive Design** - Bekerja dengan baik di desktop dan mobile
+- 🔄 **Cache Management** - Flush zone cache dan monitoring
 
 ## Teknologi yang Digunakan
 

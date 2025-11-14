@@ -98,10 +98,10 @@ const activityLogger = {
     }),
 
     // System operations
-    bindReloaded: (details = {}) => logActivity({
+    unboundReloaded: (details = {}) => logActivity({
         type: 'system',
         action: 'reload',
-        description: 'Bind DNS server reloaded',
+        description: 'Unbound DNS server reloaded',
         details
     }),
 

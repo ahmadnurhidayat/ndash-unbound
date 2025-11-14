@@ -7,14 +7,14 @@
             </div>
             <div>
                 <h1 class="text-xl font-bold">NDash</h1>
-                <p class="text-xs text-gray-400">Bind DNS Manager</p>
+                <p class="text-xs text-gray-400">Unbound DNS Manager</p>
             </div>
         </div>
     </div>
 
     <!-- Navigation -->
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <a href="/" class="nav-item <%= title === 'NDash - Bind DNS Dashboard' ? 'active' : '' %>">
+        <a href="/" class="nav-item <%= title === 'NDash - Unbound DNS Dashboard' ? 'active' : '' %>">
             <i class="fas fa-th-large"></i>
             <span>Dashboard</span>
         </a>
@@ -33,9 +33,9 @@
             <span>Create Zone</span>
         </a>
         
-        <button onclick="reloadBindFromSidebar()" class="nav-item w-full text-left">
+        <button onclick="reloadUnboundFromSidebar()" class="nav-item w-full text-left">
             <i class="fas fa-sync-alt" id="reload-icon-sidebar"></i>
-            <span>Reload Bind</span>
+            <span>Reload Unbound</span>
         </button>
         
         <a href="/settings" class="nav-item">
@@ -52,9 +52,14 @@
             <span>Monitoring</span>
         </a>
         
-        <a href="/statistics" class="nav-item">
+        <a href="/statistics" class="nav-item <%= title === 'Statistics - NDash' ? 'active' : '' %>">
             <i class="fas fa-chart-pie"></i>
-            <span>Statistics</span>
+            <span>DNS Statistics</span>
+        </a>
+        
+        <a href="/statistics/resolver" class="nav-item <%= title === 'Resolver Statistics - NDash' ? 'active' : '' %>">
+            <i class="fas fa-server"></i>
+            <span>Resolver Statistics</span>
         </a>
         
         <a href="/activity" class="nav-item">
@@ -81,7 +86,7 @@
 </aside>
 
 <script>
-function reloadBindFromSidebar() {
+function reloadUnboundFromSidebar() {
     const icon = document.getElementById('reload-icon-sidebar');
     icon.classList.add('fa-spin');
     
@@ -101,7 +106,7 @@ function reloadBindFromSidebar() {
     })
     .catch(error => {
         icon.classList.remove('fa-spin');
-        showNotification('Failed to reload Bind', 'error');
+        showNotification('Failed to reload Unbound', 'error');
     });
 }
 

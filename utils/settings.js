@@ -11,12 +11,54 @@ const DEFAULT_SETTINGS = {
         backupEnabled: true,
         autoGeneratePTR: true
     },
-    bind: {
-        version: 'Bind 9.18.28',
-        configPath: '/etc/bind',
-        zonesPath: '/etc/bind/zones',
-        namedConfLocal: '/etc/bind/named.conf.local',
-        namedConfOptions: '/etc/bind/named.conf.options'
+    unbound: {
+        version: 'Unbound',
+        configPath: '/etc/unbound',
+        confPath: '/etc/unbound/unbound.conf',
+        localZonesPath: '/etc/unbound/local.d',
+        controlSocket: '/var/run/unbound.ctl',
+        logFile: '/var/log/unbound.log'
+    },
+    resolver: {
+        enabled: true,
+        forwardingEnabled: true,
+        upstreamDNS: [
+            { name: 'Cloudflare Primary', address: '1.1.1.1', port: 53, enabled: true },
+            { name: 'Cloudflare Secondary', address: '1.0.0.1', port: 53, enabled: true },
+            { name: 'Google Primary', address: '8.8.8.8', port: 53, enabled: true },
+            { name: 'Google Secondary', address: '8.8.4.4', port: 53, enabled: true }
+        ],
+        cacheSize: {
+            msg: 16,  // MB
+            rrset: 32  // MB
+        },
+        cacheTTL: {
+            min: 300,     // 5 minutes
+            max: 86400    // 24 hours
+        },
+        performance: {
+            numThreads: 2,
+            prefetch: true,
+            prefetchKey: true
+        },
+        security: {
+            hideIdentity: true,
+            hideVersion: true,
+            dnssec: true
+        },
+        access: {
+            allowedNetworks: [
+                { network: '127.0.0.0/8', description: 'Localhost', enabled: true },
+                { network: '10.0.0.0/8', description: 'Private Network 10.x', enabled: true },
+                { network: '172.16.0.0/12', description: 'Private Network 172.16-31.x', enabled: true },
+                { network: '192.168.0.0/16', description: 'Private Network 192.168.x', enabled: true }
+            ]
+        },
+        logging: {
+            verbosity: 1,
+            logQueries: false,
+            logReplies: false
+        }
     }
 };
 
@@ -68,9 +110,9 @@ async function updateSettings(updates) {
             ...currentSettings.zones,
             ...updates.zones
         },
-        bind: {
-            ...currentSettings.bind,
-            ...updates.bind
+        unbound: {
+            ...currentSettings.unbound,
+            ...updates.unbound
         }
     };
     await saveSettings(newSettings);

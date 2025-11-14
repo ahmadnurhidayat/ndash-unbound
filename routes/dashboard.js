@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const moment = require('moment');
-const bindService = require('../services/bindService');
+const unboundService = require('../services/unboundService');
 const { activities } = require('../data/storage');
 
 router.get('/', async (req, res) => {
     try {
-        // Get zones from Bind
-        const zones = await bindService.listZones();
+        // Get zones from Unbound
+        const zones = await unboundService.listZones();
         
         // Calculate statistics with actual record counts
         const totalRecords = zones.reduce((sum, zone) => sum + zone.records, 0);
@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
         const recordsByType = {};
         for (const zone of zones) {
             try {
-                const zoneData = await bindService.getZone(zone.name);
+                const zoneData = await unboundService.getZone(zone.name);
                 const records = zoneData.records || [];
                 records.forEach(record => {
                     const type = record.type || 'OTHER';
@@ -34,27 +34,27 @@ router.get('/', async (req, res) => {
             recentActivities: activities.slice(0, 5)
         };
 
-        // Get Bind status
-        const bindStatus = await bindService.getBindStatus();
+        // Get Unbound status
+        const unboundStatus = await unboundService.getUnboundStatus();
 
         res.render('dashboard', {
-            title: 'NDash - Bind DNS Dashboard',
+            title: 'NDash - Unbound DNS Dashboard',
             stats,
             zones: zones.slice(0, 5),
             recordsByType,
             activities: stats.recentActivities,
-            bindStatus,
+            unboundStatus,
             moment
         });
     } catch (error) {
         console.error('Dashboard error:', error);
         res.render('dashboard', {
-            title: 'NDash - Bind DNS Dashboard',
+            title: 'NDash - Unbound DNS Dashboard',
             stats: { totalZones: 0, activeZones: 0, totalRecords: 0, recentActivities: [] },
             zones: [],
             recordsByType: {},
             activities: [],
-            bindStatus: { success: false, status: 'error' },
+            unboundStatus: { success: false, status: 'error' },
             moment,
             error: error.message
         });

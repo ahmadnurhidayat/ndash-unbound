@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const bindService = require('../services/bindService');
+const unboundService = require('../services/unboundService');
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const fs = require('fs-extra');
@@ -40,7 +40,7 @@ router.get('/api/stats', async (req, res) => {
 // GET /monitoring/api/logs - API endpoint for recent logs
 router.get('/api/logs', async (req, res) => {
     try {
-        const logs = await getBindLogs(100);
+        const logs = await getUnboundLogs(100);
         res.json({ success: true, logs });
     } catch (error) {
         console.error('Error fetching logs:', error);
@@ -61,16 +61,16 @@ router.get('/api/queries', async (req, res) => {
 
 // Helper function to get all monitoring data
 async function getMonitoringData() {
-    const [bindStatus, zones, systemInfo, queryStats, logs] = await Promise.all([
-        getBindStatus(),
+    const [unboundStatus, zones, systemInfo, queryStats, logs] = await Promise.all([
+        getUnboundStatus(),
         getZonesStatus(),
         getSystemInfo(),
         getQueryStats(),
-        getBindLogs(50)
+        getUnboundLogs(50)
     ]);
 
     return {
-        bind: bindStatus,
+        unbound: unboundStatus,
         zones,
         system: systemInfo,
         queries: queryStats,
@@ -78,29 +78,25 @@ async function getMonitoringData() {
     };
 }
 
-// Get Bind server status
-async function getBindStatus() {
+// Get Unbound server status
+async function getUnboundStatus() {
     try {
-        const status = await bindService.getBindStatus();
+        const status = await unboundService.getUnboundStatus();
         
         // Get uptime
         let uptime = 'Unknown';
         try {
-            const { stdout } = await execAsync('ps -p $(pgrep named) -o etime= 2>/dev/null || echo "0"');
+            const { stdout } = await execAsync('ps -p $(pgrep unbound) -o etime= 2>/dev/null || echo "0"');
             uptime = stdout.trim() || 'Unknown';
         } catch (e) {
             console.error('Error getting uptime:', e.message);
         }
 
-        // Get statistics from rndc stats
+        // Get statistics from unbound-control
         let stats = {};
         try {
-            await execAsync('sudo rndc stats');
-            const statsFile = '/var/cache/bind/named.stats';
-            if (await fs.pathExists(statsFile)) {
-                const content = await fs.readFile(statsFile, 'utf8');
-                stats = parseBindStats(content);
-            }
+            const { stdout } = await execAsync('sudo unbound-control stats_noreset');
+            stats = parseUnboundStats(stdout);
         } catch (e) {
             console.error('Error getting stats:', e.message);
         }
@@ -113,7 +109,7 @@ async function getBindStatus() {
             lastCheck: new Date().toISOString()
         };
     } catch (error) {
-        console.error('Error getting Bind status:', error);
+        console.error('Error getting Unbound status:', error);
         return {
             running: false,
             version: 'Unknown',
@@ -127,46 +123,50 @@ async function getBindStatus() {
 // Get zones status
 async function getZonesStatus() {
     try {
-        const zones = await bindService.listZones();
+        const zones = await unboundService.listZones();
         const zonesWithStatus = await Promise.all(
             zones.map(async (zone) => {
                 try {
                     // Get full zone data with records
-                    let recordCount = 0;
+                    const zoneData = await unboundService.getZone(zone.name);
+                    const recordCount = zoneData.records ? zoneData.records.length : 0;
+                    
+                    // For Unbound, zones are loaded if they exist in config
+                    // We can verify by checking if unbound-control list_local_zones includes this zone
+                    let status = 'loaded';
+                    let serial = 'N/A'; // Unbound doesn't use serial numbers like BIND
+                    
                     try {
-                        const zoneData = await bindService.getZone(zone.name);
-                        recordCount = zoneData.records ? zoneData.records.length : 0;
+                        const { stdout } = await execAsync('sudo unbound-control list_local_zones 2>&1');
+                        if (stdout.includes(zone.name)) {
+                            status = 'loaded';
+                            // Generate pseudo-serial from last modified time
+                            const timestamp = new Date(zone.lastModified).getTime();
+                            serial = Math.floor(timestamp / 1000).toString();
+                        } else {
+                            status = 'not-loaded';
+                        }
                     } catch (e) {
-                        console.error(`Error getting records for ${zone.name}:`, e.message);
+                        // If we can't check, but file exists, assume loaded
+                        console.log(`Could not verify zone ${zone.name} in Unbound, assuming loaded`);
+                        status = 'loaded';
                     }
-
-                    // Check zone status
-                    const { stdout } = await execAsync(`sudo rndc zonestatus ${zone.name} 2>&1`);
-                    const serial = extractSerial(stdout);
                     
                     return {
                         name: zone.name,
                         type: zone.type,
-                        status: 'loaded',
-                        serial,
+                        status: status,
+                        serial: serial,
                         records: recordCount
                     };
                 } catch (error) {
-                    // Try to get record count even if zone status check fails
-                    let recordCount = 0;
-                    try {
-                        const zoneData = await bindService.getZone(zone.name);
-                        recordCount = zoneData.records ? zoneData.records.length : 0;
-                    } catch (e) {
-                        console.error(`Error getting records for ${zone.name}:`, e.message);
-                    }
-
+                    console.error(`Error processing zone ${zone.name}:`, error.message);
                     return {
                         name: zone.name,
                         type: zone.type,
                         status: 'error',
                         serial: 'N/A',
-                        records: recordCount
+                        records: 0
                     };
                 }
             })
@@ -203,7 +203,7 @@ async function getSystemInfo() {
         // Get disk usage
         let diskUsage = {};
         try {
-            const { stdout } = await execAsync('df -h /etc/bind | tail -1');
+            const { stdout } = await execAsync('df -h /etc/unbound | tail -1');
             const parts = stdout.trim().split(/\s+/);
             diskUsage = {
                 total: parts[1],
@@ -258,22 +258,9 @@ async function getSystemInfo() {
 // Get query statistics
 async function getQueryStats() {
     try {
-        // Execute rndc stats and parse
-        await execAsync('sudo rndc stats');
-        const statsFile = '/var/cache/bind/named.stats';
-        
-        if (await fs.pathExists(statsFile)) {
-            const content = await fs.readFile(statsFile, 'utf8');
-            return parseQueryStats(content);
-        }
-
-        return {
-            total: 0,
-            success: 0,
-            failure: 0,
-            recursion: 0,
-            queryTypes: {}
-        };
+        // Execute unbound-control stats
+        const { stdout } = await execAsync('sudo unbound-control stats_noreset');
+        return parseQueryStats(stdout);
     } catch (error) {
         console.error('Error getting query stats:', error);
         return {
@@ -286,15 +273,15 @@ async function getQueryStats() {
     }
 }
 
-// Get Bind logs
-async function getBindLogs(lines = 50) {
+// Get Unbound logs
+async function getUnboundLogs(lines = 50) {
     try {
-        const { stdout } = await execAsync(`sudo tail -${lines} /var/log/syslog | grep named || echo "No logs found"`);
+        const { stdout } = await execAsync(`sudo tail -${lines} /var/log/syslog | grep unbound || echo "No logs found"`);
         
         const logLines = stdout.trim().split('\n').filter(line => line.length > 0);
         
         return logLines.map(line => {
-            const match = line.match(/^(\w+\s+\d+\s+\d+:\d+:\d+)\s+(\S+)\s+named\[\d+\]:\s+(.+)$/);
+            const match = line.match(/^(\w+\s+\d+\s+\d+:\d+:\d+)\s+(\S+)\s+unbound\[\d+\]:\s+(.+)$/);
             if (match) {
                 return {
                     timestamp: match[1],
@@ -317,22 +304,31 @@ async function getBindLogs(lines = 50) {
 }
 
 // Helper functions
-function parseBindStats(content) {
+function parseUnboundStats(content) {
     const stats = {
         queries: 0,
-        responses: 0,
+        hits: 0,
+        misses: 0,
         errors: 0
     };
 
     try {
         const lines = content.split('\n');
         for (const line of lines) {
-            if (line.includes('queries resulted in successful answer')) {
-                const match = line.match(/(\d+)\s+queries/);
+            if (line.includes('total.num.queries=')) {
+                const match = line.match(/=(\d+)/);
                 if (match) stats.queries = parseInt(match[1]);
             }
-            if (line.includes('queries resulted in SERVFAIL')) {
-                const match = line.match(/(\d+)\s+queries/);
+            if (line.includes('total.num.cachehits=')) {
+                const match = line.match(/=(\d+)/);
+                if (match) stats.hits = parseInt(match[1]);
+            }
+            if (line.includes('total.num.cachemiss=')) {
+                const match = line.match(/=(\d+)/);
+                if (match) stats.misses = parseInt(match[1]);
+            }
+            if (line.includes('total.num.recursivereplies=')) {
+                const match = line.match(/=(\d+)/);
                 if (match) stats.errors = parseInt(match[1]);
             }
         }

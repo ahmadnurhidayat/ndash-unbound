@@ -20,7 +20,7 @@
                 <i class="fas fa-plus mr-2"></i>
                 Add Record
             </a>
-            <button onclick="reloadBindZone()" class="btn">
+            <button onclick="reloadUnboundZone()" class="btn">
                 <i class="fas fa-sync-alt mr-2"></i>
                 Reload Zone
             </button>
@@ -111,13 +111,13 @@
 </div>
 
 <script>
-async function reloadBindZone() {
-    if (confirm('Reload Bind DNS configuration?')) {
+async function reloadUnboundZone() {
+    if (confirm('Reload Unbound DNS configuration?')) {
         try {
             const response = await fetch('/zones/reload', { method: 'POST' });
             const data = await response.json();
             if (data.success) {
-                alert('✓ Bind reloaded successfully');
+                alert('✓ Unbound reloaded successfully');
             } else {
                 alert('✗ Failed to reload: ' + data.error);
             }

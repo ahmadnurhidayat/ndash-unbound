@@ -1,6 +1,6 @@
 [Unit]
-Description=NDash - Bind DNS Management Dashboard
-After=network.target
+Description=NDash - Unbound DNS Management Dashboard
+After=network.target unbound.service
 
 [Service]
 Type=simple
@@ -11,7 +11,7 @@ Restart=on-failure
 RestartSec=10
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=ndash
+SyslogIdentifier=ndash-unbound
 
 Environment=NODE_ENV=production
 Environment=PORT=3000

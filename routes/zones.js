@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const moment = require('moment');
-const bindService = require('../services/bindService');
+const unboundService = require('../services/unboundService');
 
 // List all zones
 router.get('/', async (req, res) => {
     try {
-        const zones = await bindService.listZones();
+        const zones = await unboundService.listZones();
         
         res.render('zones/list', {
             title: 'DNS Zones',
@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
 router.get('/:zoneName', async (req, res) => {
     try {
         const zoneName = req.params.zoneName;
-        const { zone, records } = await bindService.getZone(zoneName);
+        const { zone, records } = await unboundService.getZone(zoneName);
 
         res.render('zones/detail', {
             title: `Zone: ${zone.name}`,
@@ -87,7 +87,7 @@ router.post('/', async (req, res) => {
             zoneData.domain = domain;
         }
         
-        const result = await bindService.createZone(zoneData);
+        const result = await unboundService.createZone(zoneData);
         
         console.log('Zone created:', result);
         res.redirect(`/zones/${name}?success=` + encodeURIComponent(`Zone ${name} created successfully`));
@@ -101,7 +101,7 @@ router.post('/', async (req, res) => {
 router.post('/:zoneName/delete', async (req, res) => {
     try {
         const zoneName = req.params.zoneName;
-        await bindService.deleteZone(zoneName);
+        await unboundService.deleteZone(zoneName);
         res.redirect('/zones?success=' + encodeURIComponent(`Zone ${zoneName} deleted successfully`));
     } catch (error) {
         console.error('Error deleting zone:', error);
@@ -109,11 +109,11 @@ router.post('/:zoneName/delete', async (req, res) => {
     }
 });
 
-// Reload Bind
+// Reload Unbound
 router.post('/reload', async (req, res) => {
     try {
-        await bindService.reloadBind();
-        res.json({ success: true, message: 'Bind reloaded successfully' });
+        await unboundService.reloadUnbound();
+        res.json({ success: true, message: 'Unbound reloaded successfully' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

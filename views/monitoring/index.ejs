@@ -3,7 +3,7 @@
 <div class="mb-6 flex items-center justify-between">
     <div>
         <h3 class="text-2xl font-bold text-gray-800">DNS Server Monitoring</h3>
-        <p class="text-gray-600 mt-1">Real-time monitoring of Bind DNS server and system resources</p>
+        <p class="text-gray-600 mt-1">Real-time monitoring of Unbound DNS server and system resources</p>
     </div>
     <div class="flex gap-2">
         <button onclick="refreshStats()" class="btn-sm btn-primary">
@@ -19,20 +19,20 @@
 
 <!-- Status Overview Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <!-- Bind Status -->
-    <div class="stat-card <%= bind.running ? 'border-green-500' : 'border-red-500' %>">
-        <div class="flex items-center justify-between">
+    <!-- Unbound Status -->
+    <div class="stat-card <%= unbound.running ? 'border-green-500' : 'border-red-500' %>">
+        <div class="flex items-center justify-between mb-2">
             <div>
-                <p class="text-sm text-gray-600">Bind Status</p>
-                <p class="text-2xl font-bold <%= bind.running ? 'text-green-600' : 'text-red-600' %>">
-                    <%= bind.running ? 'Running' : 'Stopped' %>
+                <h3 class="text-sm text-gray-600">Unbound Status</h3>
+                <p class="text-2xl font-bold <%= unbound.running ? 'text-green-600' : 'text-red-600' %>">
+                    <%= unbound.running ? 'Running' : 'Stopped' %>
                 </p>
             </div>
-            <div class="w-12 h-12 <%= bind.running ? 'bg-green-100' : 'bg-red-100' %> rounded-full flex items-center justify-center">
-                <i class="fas <%= bind.running ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-600' %> text-2xl"></i>
+            <div class="w-12 h-12 <%= unbound.running ? 'bg-green-100' : 'bg-red-100' %> rounded-full flex items-center justify-center">
+                <i class="fas <%= unbound.running ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-600' %> text-2xl"></i>
             </div>
         </div>
-        <p class="text-xs text-gray-500 mt-2">Uptime: <%= bind.uptime %></p>
+        <p class="text-xs text-gray-500 mt-2">Uptime: <%= unbound.uptime %></p>
     </div>
 
     <!-- Zones -->
@@ -81,52 +81,52 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left Column -->
     <div class="lg:col-span-2 space-y-6">
-        <!-- Bind Server Details -->
+        <!-- Unbound Server Details -->
         <div class="content-card">
             <h4 class="text-lg font-semibold text-gray-800 mb-4">
                 <i class="fas fa-server mr-2 text-blue-600"></i>
-                Bind Server Details
+                Unbound Server Details
             </h4>
             
             <div class="grid grid-cols-2 gap-4">
                 <div class="p-3 bg-gray-50 rounded">
                     <p class="text-xs text-gray-600">Version</p>
-                    <p class="text-sm font-semibold text-gray-800"><%= bind.version %></p>
+                    <p class="text-sm font-semibold text-gray-800"><%= unbound.version %></p>
                 </div>
                 <div class="p-3 bg-gray-50 rounded">
                     <p class="text-xs text-gray-600">Status</p>
-                    <p class="text-sm font-semibold <%= bind.running ? 'text-green-600' : 'text-red-600' %>">
+                    <p class="text-sm font-semibold <%= unbound.running ? 'text-green-600' : 'text-red-600' %>">
                         <i class="fas fa-circle text-xs mr-1"></i>
-                        <%= bind.running ? 'Active' : 'Inactive' %>
+                        <%= unbound.running ? 'Active' : 'Inactive' %>
                     </p>
                 </div>
                 <div class="p-3 bg-gray-50 rounded">
                     <p class="text-xs text-gray-600">Uptime</p>
-                    <p class="text-sm font-semibold text-gray-800"><%= bind.uptime %></p>
+                    <p class="text-sm font-semibold text-gray-800"><%= unbound.uptime %></p>
                 </div>
                 <div class="p-3 bg-gray-50 rounded">
                     <p class="text-xs text-gray-600">Last Check</p>
                     <p class="text-sm font-semibold text-gray-800">
-                        <%= new Date(bind.lastCheck).toLocaleTimeString() %>
+                        <%= new Date(unbound.lastCheck).toLocaleTimeString() %>
                     </p>
                 </div>
             </div>
 
-            <% if (bind.stats && Object.keys(bind.stats).length > 0) { %>
+            <% if (unbound.stats && Object.keys(unbound.stats).length > 0) { %>
             <div class="mt-4 pt-4 border-t">
                 <p class="text-sm font-semibold text-gray-700 mb-3">Statistics</p>
                 <div class="grid grid-cols-3 gap-3">
                     <div class="text-center p-2 bg-blue-50 rounded">
-                        <p class="text-lg font-bold text-blue-600"><%= bind.stats.queries || 0 %></p>
+                        <p class="text-lg font-bold text-blue-600"><%= unbound.stats.queries || 0 %></p>
                         <p class="text-xs text-gray-600">Queries</p>
                     </div>
                     <div class="text-center p-2 bg-green-50 rounded">
-                        <p class="text-lg font-bold text-green-600"><%= bind.stats.responses || 0 %></p>
-                        <p class="text-xs text-gray-600">Responses</p>
+                        <p class="text-lg font-bold text-green-600"><%= unbound.stats.hits || 0 %></p>
+                        <p class="text-xs text-gray-600">Cache Hits</p>
                     </div>
                     <div class="text-center p-2 bg-red-50 rounded">
-                        <p class="text-lg font-bold text-red-600"><%= bind.stats.errors || 0 %></p>
-                        <p class="text-xs text-gray-600">Errors</p>
+                        <p class="text-lg font-bold text-red-600"><%= unbound.stats.misses || 0 %></p>
+                        <p class="text-xs text-gray-600">Cache Misses</p>
                     </div>
                 </div>
             </div>
@@ -341,7 +341,7 @@
                 <!-- Disk -->
                 <% if (system.disk && system.disk.total) { %>
                 <div class="p-3 bg-gray-50 rounded">
-                    <p class="text-xs text-gray-600 mb-2">Disk Usage (/etc/bind)</p>
+                    <p class="text-xs text-gray-600 mb-2">Disk Usage (/etc/unbound)</p>
                     <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
                         <div class="bg-blue-600 h-4 rounded-full flex items-center justify-center text-xs text-white font-semibold" 
                              style="width: <%= system.disk.percent %>">
@@ -381,9 +381,9 @@
             </h4>
             
             <div class="space-y-2">
-                <button onclick="reloadBind()" class="btn btn-primary w-full">
+                <button onclick="reloadUnbound()" class="btn btn-primary w-full">
                     <i class="fas fa-sync-alt mr-2"></i>
-                    Reload Bind
+                    Reload Unbound
                 </button>
                 
                 <a href="/zones" class="btn w-full block text-center">
@@ -456,8 +456,8 @@ async function refreshStats() {
     }
 }
 
-async function reloadBind() {
-    if (!confirm('Reload Bind DNS server?')) return;
+async function reloadUnbound() {
+    if (!confirm('Reload Unbound DNS server?')) return;
     
     try {
         const response = await fetch('/zones/reload', {
@@ -471,11 +471,11 @@ async function reloadBind() {
             showNotification(result.message, 'success');
             setTimeout(() => refreshStats(), 2000);
         } else {
-            showNotification(result.error || 'Failed to reload Bind', 'error');
+            showNotification(result.error || 'Failed to reload Unbound', 'error');
         }
     } catch (error) {
-        console.error('Error reloading Bind:', error);
-        showNotification('Failed to reload Bind', 'error');
+        console.error('Error reloading Unbound:', error);
+        showNotification('Failed to reload Unbound', 'error');
     }
 }
 

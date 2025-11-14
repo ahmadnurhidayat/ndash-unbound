@@ -5,12 +5,14 @@ module.exports = {
         env: process.env.NODE_ENV || 'development'
     },
 
-    // Bind Configuration
-    bind: {
-        zonesPath: process.env.BIND_ZONES_PATH || '/etc/bind/zones',
-        confPath: process.env.BIND_CONF_PATH || '/etc/bind/named.conf.local',
-        reloadCommand: 'rndc reload',
-        checkCommand: 'named-checkzone'
+    // Unbound Configuration
+    unbound: {
+        confPath: process.env.UNBOUND_CONF_PATH || '/etc/unbound/unbound.conf',
+        localZonesPath: process.env.UNBOUND_ZONES_PATH || '/etc/unbound/local.d',
+        controlCommand: 'unbound-control',
+        checkCommand: 'unbound-checkconf',
+        reloadCommand: 'unbound-control reload',
+        includesDir: '/etc/unbound/local.d'
     },
 
     // Session Configuration

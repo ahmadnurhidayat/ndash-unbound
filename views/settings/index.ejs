@@ -2,7 +2,7 @@
 
 <div class="mb-6">
     <h3 class="text-2xl font-bold text-gray-800">System Settings</h3>
-    <p class="text-gray-600 mt-1">Configure NDash and Bind DNS server settings</p>
+    <p class="text-gray-600 mt-1">Configure NDash and Unbound DNS server settings</p>
 </div>
 
 <% if (typeof success !== 'undefined' && success) { %>
@@ -20,7 +20,7 @@
 <% } %>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Bind Configuration -->
+    <!-- Unbound Configuration -->
     <div class="lg:col-span-2 space-y-6">
         <!-- Server Information -->
         <div class="content-card">
@@ -37,8 +37,8 @@
             
             <div class="grid grid-cols-2 gap-4" id="server-info">
                 <div class="border-l-4 border-blue-500 pl-4">
-                    <p class="text-sm text-gray-600">Bind Version</p>
-                    <p class="text-lg font-semibold text-gray-800"><%= settings.bind.version %></p>
+                    <p class="text-sm text-gray-600">Unbound Version</p>
+                    <p class="text-lg font-semibold text-gray-800"><%= settings.unbound ? settings.unbound.version : 'N/A' %></p>
                 </div>
                 <div class="border-l-4 border-green-500 pl-4">
                     <p class="text-sm text-gray-600">Node.js Version</p>
@@ -55,44 +55,44 @@
             </div>
         </div>
 
-        <!-- Bind Paths -->
+        <!-- Unbound Paths -->
         <div class="content-card">
             <h4 class="text-lg font-semibold text-gray-800 mb-4">
                 <i class="fas fa-folder mr-2 text-yellow-600"></i>
-                Bind Configuration Paths
+                Unbound Configuration Paths
             </h4>
             
             <div class="space-y-3">
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <div>
-                        <p class="text-sm font-medium text-gray-700">Config Directory</p>
-                        <p class="text-sm text-gray-600 font-mono"><%= settings.bind.configPath %></p>
-                    </div>
-                    <i class="fas fa-folder-open text-gray-400"></i>
-                </div>
-                
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <div>
-                        <p class="text-sm font-medium text-gray-700">Zones Directory</p>
-                        <p class="text-sm text-gray-600 font-mono"><%= settings.bind.zonesPath %></p>
-                    </div>
-                    <i class="fas fa-folder-open text-gray-400"></i>
-                </div>
-                
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <div>
-                        <p class="text-sm font-medium text-gray-700">Named Conf Local</p>
-                        <p class="text-sm text-gray-600 font-mono"><%= settings.bind.namedConfLocal %></p>
+                        <p class="text-sm font-medium text-gray-700">Main Config File</p>
+                        <p class="text-sm text-gray-600 font-mono">/etc/unbound/unbound.conf</p>
                     </div>
                     <i class="fas fa-file-code text-gray-400"></i>
                 </div>
                 
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <div>
-                        <p class="text-sm font-medium text-gray-700">Named Conf Options</p>
-                        <p class="text-sm text-gray-600 font-mono"><%= settings.bind.namedConfOptions %></p>
+                        <p class="text-sm font-medium text-gray-700">Local Zones Directory</p>
+                        <p class="text-sm text-gray-600 font-mono">/etc/unbound/local.d</p>
                     </div>
-                    <i class="fas fa-file-code text-gray-400"></i>
+                    <i class="fas fa-folder-open text-gray-400"></i>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Control Socket</p>
+                        <p class="text-sm text-gray-600 font-mono">/var/run/unbound.ctl</p>
+                    </div>
+                    <i class="fas fa-plug text-gray-400"></i>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Log File</p>
+                        <p class="text-sm text-gray-600 font-mono">/var/log/unbound.log</p>
+                    </div>
+                    <i class="fas fa-file-alt text-gray-400"></i>
                 </div>
             </div>
         </div>
@@ -107,8 +107,8 @@
             <form method="POST" action="/settings" class="space-y-4">
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <div>
-                        <p class="text-sm font-medium text-gray-700">Auto Reload Bind</p>
-                        <p class="text-xs text-gray-600">Automatically reload Bind after zone changes</p>
+                        <p class="text-sm font-medium text-gray-700">Auto Reload Unbound</p>
+                        <p class="text-xs text-gray-600">Automatically reload Unbound after zone changes</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="autoReload" class="sr-only peer" <%= settings.zones.autoReload ? 'checked' : '' %>>
@@ -119,7 +119,7 @@
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <div>
                         <p class="text-sm font-medium text-gray-700">Validate Before Reload</p>
-                        <p class="text-xs text-gray-600">Check zone syntax before reloading Bind</p>
+                        <p class="text-xs text-gray-600">Check zone syntax before reloading Unbound</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="validateBeforeReload" class="sr-only peer" <%= settings.zones.validateBeforeReload ? 'checked' : '' %>>
@@ -157,18 +157,215 @@
                 </div>
             </form>
         </div>
+
+        <!-- DNS Resolver Settings -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-network-wired mr-2 text-green-600"></i>
+                DNS Resolver Settings
+            </h4>
+            
+            <form method="POST" action="/settings/resolver">
+                <!-- Enable Resolver -->
+                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">Enable DNS Resolver</label>
+                            <p class="text-xs text-gray-500">Allow Unbound to resolve internet domains</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="resolverEnabled" class="sr-only peer" <%= settings.resolver && settings.resolver.enabled ? 'checked' : '' %>>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="resolver-options" style="display: <%= settings.resolver && settings.resolver.enabled ? 'block' : 'none' %>">
+                    <!-- Forwarding -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Enable Forwarding</label>
+                                <p class="text-xs text-gray-500">Forward queries to upstream DNS servers</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="forwardingEnabled" class="sr-only peer" <%= settings.resolver && settings.resolver.forwardingEnabled ? 'checked' : '' %>>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Upstream DNS Servers -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Upstream DNS Servers
+                        </label>
+                        <div class="space-y-2">
+                            <% if (settings.resolver && settings.resolver.upstreamDNS) { %>
+                                <% settings.resolver.upstreamDNS.forEach((dns, index) => { %>
+                                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" name="upstream_<%= index %>_enabled" <%= dns.enabled ? 'checked' : '' %> class="w-4 h-4 text-blue-600">
+                                            <span class="text-sm font-medium"><%= dns.name %></span>
+                                            <span class="text-xs text-gray-500"><%= dns.address %>:<%= dns.port %></span>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Cache Settings -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cache Size</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-600">Message Cache (MB)</label>
+                                <input type="number" name="cacheSizeMsg" value="<%= settings.resolver ? settings.resolver.cacheSize.msg : 16 %>" class="form-input text-sm" min="4" max="256">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600">RRset Cache (MB)</label>
+                                <input type="number" name="cacheSizeRrset" value="<%= settings.resolver ? settings.resolver.cacheSize.rrset : 32 %>" class="form-input text-sm" min="4" max="512">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cache TTL -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cache TTL (seconds)</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-600">Minimum</label>
+                                <input type="number" name="cacheTTLMin" value="<%= settings.resolver ? settings.resolver.cacheTTL.min : 300 %>" class="form-input text-sm" min="0" max="3600">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600">Maximum</label>
+                                <input type="number" name="cacheTTLMax" value="<%= settings.resolver ? settings.resolver.cacheTTL.max : 86400 %>" class="form-input text-sm" min="3600" max="604800">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Performance</label>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Number of Threads</span>
+                                <input type="number" name="numThreads" value="<%= settings.resolver ? settings.resolver.performance.numThreads : 2 %>" class="form-input text-sm w-20" min="1" max="8">
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Prefetch Popular Entries</span>
+                                <input type="checkbox" name="prefetch" <%= settings.resolver && settings.resolver.performance.prefetch ? 'checked' : '' %>>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Prefetch DNSSEC Keys</span>
+                                <input type="checkbox" name="prefetchKey" <%= settings.resolver && settings.resolver.performance.prefetchKey ? 'checked' : '' %>>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Security & Privacy</label>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Hide Server Identity</span>
+                                <input type="checkbox" name="hideIdentity" <%= settings.resolver && settings.resolver.security.hideIdentity ? 'checked' : '' %>>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Hide Server Version</span>
+                                <input type="checkbox" name="hideVersion" <%= settings.resolver && settings.resolver.security.hideVersion ? 'checked' : '' %>>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Enable DNSSEC</span>
+                                <input type="checkbox" name="dnssec" <%= settings.resolver && settings.resolver.security.dnssec ? 'checked' : '' %>>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Access Control -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Allowed Networks
+                        </label>
+                        <div class="space-y-2">
+                            <% if (settings.resolver && settings.resolver.access && settings.resolver.access.allowedNetworks) { %>
+                                <% settings.resolver.access.allowedNetworks.forEach((net, index) => { %>
+                                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" name="network_<%= index %>_enabled" <%= net.enabled ? 'checked' : '' %> class="w-4 h-4 text-blue-600">
+                                            <div>
+                                                <span class="text-sm font-medium"><%= net.network %></span>
+                                                <span class="text-xs text-gray-500 block"><%= net.description %></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Logging -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Logging</label>
+                        <div class="grid grid-cols-2 gap-3 mb-2">
+                            <div>
+                                <label class="text-xs text-gray-600">Verbosity (0-5)</label>
+                                <input type="number" name="verbosity" value="<%= settings.resolver ? settings.resolver.logging.verbosity : 1 %>" class="form-input text-sm" min="0" max="5">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Log Queries</span>
+                                <input type="checkbox" name="logQueries" <%= settings.resolver && settings.resolver.logging.logQueries ? 'checked' : '' %>>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Log Replies</span>
+                                <input type="checkbox" name="logReplies" <%= settings.resolver && settings.resolver.logging.logReplies ? 'checked' : '' %>>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pt-4 space-y-2">
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="fas fa-save mr-2"></i>
+                        Apply Resolver Settings
+                    </button>
+                    <button type="button" onclick="testResolver()" class="btn btn-secondary w-full">
+                        <i class="fas fa-vial mr-2"></i>
+                        Test DNS Resolution
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Quick Actions -->
     <div class="space-y-6">
-        <!-- Bind Status -->
+        <!-- Resolver Status -->
+        <div class="content-card">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-globe mr-2 text-green-600"></i>
+                Resolver Status
+            </h4>
+            
+            <div id="resolver-status" class="space-y-3">
+                <div class="text-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                    <p class="text-sm text-gray-600 mt-2">Loading status...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unbound Status -->
         <div class="content-card">
             <h4 class="text-lg font-semibold text-gray-800 mb-4">
                 <i class="fas fa-heartbeat mr-2 text-red-600"></i>
-                Bind Status
+                Unbound Status
             </h4>
             
-            <div id="bind-status" class="space-y-3">
+            <div id="unbound-status" class="space-y-3">
                 <div class="text-center py-4">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                     <p class="text-sm text-gray-600 mt-2">Loading status...</p>
@@ -184,9 +381,9 @@
             </h4>
             
             <div class="space-y-2">
-                <button onclick="reloadBind()" class="btn btn-primary w-full">
+                <button onclick="reloadUnbound()" class="btn btn-primary w-full">
                     <i class="fas fa-sync-alt mr-2"></i>
-                    Reload Bind
+                    Reload Unbound
                 </button>
                 
                 <button onclick="checkConfig()" class="btn w-full">
@@ -224,7 +421,7 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Repository</span>
-                    <a href="https://github.com/dionipe/ndash-bind" target="_blank" class="text-blue-600 hover:underline">
+                    <a href="https://github.com/dionipe/ndash" target="_blank" class="text-blue-600 hover:underline">
                         <i class="fab fa-github mr-1"></i>GitHub
                     </a>
                 </div>
@@ -234,9 +431,21 @@
 </div>
 
 <script>
-// Load Bind status on page load
+// Load Unbound status on page load
 document.addEventListener('DOMContentLoaded', function() {
-    loadBindStatus();
+    loadUnboundStatus();
+    loadResolverStatus();
+    
+    // Toggle resolver options visibility
+    const resolverEnabledCheckbox = document.querySelector('input[name="resolverEnabled"]');
+    if (resolverEnabledCheckbox) {
+        resolverEnabledCheckbox.addEventListener('change', function() {
+            const options = document.getElementById('resolver-options');
+            if (options) {
+                options.style.display = this.checked ? 'block' : 'none';
+            }
+        });
+    }
     
     // Add form submit handler to show loading state
     const form = document.querySelector('form');
@@ -257,11 +466,97 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function loadBindStatus() {
+function loadResolverStatus() {
+    fetch('/settings/resolver/status')
+        .then(response => response.json())
+        .then(data => {
+            const statusDiv = document.getElementById('resolver-status');
+            if (data.success && data.status) {
+                const status = data.status;
+                const stats = data.stats || {};
+                const statusColor = status.running ? 'green' : 'gray';
+                const statusIcon = status.running ? 'check-circle' : 'times-circle';
+                
+                let html = `
+                    <div class="text-center py-3 mb-3">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-${statusColor}-100 mb-2">
+                            <i class="fas fa-${statusIcon} text-3xl text-${statusColor}-600"></i>
+                        </div>
+                        <p class="text-lg font-semibold text-gray-800">
+                            ${status.enabled ? (status.running ? 'Active' : 'Configured') : 'Disabled'}
+                        </p>
+                        <p class="text-xs text-gray-600">${status.message}</p>
+                    </div>
+                `;
+                
+                if (status.running && stats.queries !== undefined) {
+                    const hitRate = stats.cacheHitRate || 0;
+                    html += `
+                        <div class="space-y-2 pt-3 border-t">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Total Queries</span>
+                                <span class="font-semibold">${stats.queries}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Cache Hits</span>
+                                <span class="font-semibold text-green-600">${stats.cachehits}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Cache Miss</span>
+                                <span class="font-semibold text-orange-600">${stats.cachemiss}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Hit Rate</span>
+                                <span class="font-semibold text-blue-600">${hitRate}%</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                statusDiv.innerHTML = html;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-exclamation-triangle text-3xl text-yellow-600 mb-2"></i>
+                        <p class="text-sm text-gray-600">Failed to load status</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading resolver status:', error);
+        });
+}
+
+function testResolver() {
+    const domain = prompt('Enter domain to test (e.g., google.com):', 'google.com');
+    if (!domain) return;
+    
+    showNotification('Testing DNS resolution...', 'info');
+    
+    fetch('/settings/resolver/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: domain })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`✓ ${domain} → ${data.result}`, 'success');
+        } else {
+            showNotification(`✗ ${data.message}`, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Test failed: ' + error.message, 'error');
+    });
+}
+
+function loadUnboundStatus() {
     fetch('/settings/status')
         .then(response => response.json())
         .then(data => {
-            const statusDiv = document.getElementById('bind-status');
+            const statusDiv = document.getElementById('unbound-status');
             if (data.success) {
                 const statusColor = data.status === 'running' ? 'green' : 'red';
                 const statusIcon = data.status === 'running' ? 'check-circle' : 'times-circle';
@@ -292,11 +587,12 @@ function loadBindStatus() {
 function refreshStatus() {
     const icon = document.getElementById('refresh-icon');
     icon.classList.add('fa-spin');
-    loadBindStatus();
+    loadUnboundStatus();
+    loadResolverStatus();
     setTimeout(() => icon.classList.remove('fa-spin'), 1000);
 }
 
-function reloadBind() {
+function reloadUnbound() {
     fetch('/zones/reload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
@@ -305,10 +601,10 @@ function reloadBind() {
     .then(data => {
         if (data.success) {
             showNotification(data.message, 'success');
-            setTimeout(loadBindStatus, 500);
+            setTimeout(loadUnboundStatus, 500);
         }
     })
-    .catch(error => showNotification('Failed to reload Bind', 'error'));
+    .catch(error => showNotification('Failed to reload Unbound', 'error'));
 }
 
 function checkConfig() {

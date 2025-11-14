@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const bindService = require('../services/bindService');
+const unboundService = require('../services/unboundService');
 
 // List records for a zone
 router.get('/zone/:zoneName', async (req, res) => {
     try {
         const zoneName = req.params.zoneName;
-        const { zone, records } = await bindService.getZone(zoneName);
+        const { zone, records } = await unboundService.getZone(zoneName);
 
         res.render('records/list', {
             title: `Records for ${zone.name}`,
@@ -23,7 +23,7 @@ router.get('/zone/:zoneName', async (req, res) => {
 router.get('/zone/:zoneName/new', async (req, res) => {
     try {
         const zoneName = req.params.zoneName;
-        const { zone } = await bindService.getZone(zoneName);
+        const { zone } = await unboundService.getZone(zoneName);
 
         res.render('records/new', {
             title: 'Add New Record',
@@ -49,7 +49,7 @@ router.post('/zone/:zoneName', async (req, res) => {
             port: req.body.port ? parseInt(req.body.port) : undefined
         };
 
-        await bindService.addRecord(zoneName, record);
+        await unboundService.addRecord(zoneName, record);
         res.redirect(`/zones/${zoneName}?success=` + encodeURIComponent('Record added successfully'));
     } catch (error) {
         console.error('Error adding record:', error);
@@ -61,7 +61,7 @@ router.post('/zone/:zoneName', async (req, res) => {
 router.post('/:zoneName/:recordName/:recordType/delete', async (req, res) => {
     try {
         const { zoneName, recordName, recordType } = req.params;
-        await bindService.deleteRecord(zoneName, recordName, recordType);
+        await unboundService.deleteRecord(zoneName, recordName, recordType);
         res.redirect(`/zones/${zoneName}?success=` + encodeURIComponent('Record deleted successfully'));
     } catch (error) {
         console.error('Error deleting record:', error);
@@ -73,7 +73,7 @@ router.post('/:zoneName/:recordName/:recordType/delete', async (req, res) => {
 router.get('/:zoneName/:recordName/:recordType/edit', async (req, res) => {
     try {
         const { zoneName, recordName, recordType } = req.params;
-        const { zone, records } = await bindService.getZone(zoneName);
+        const { zone, records } = await unboundService.getZone(zoneName);
         
         // Find the specific record
         const record = records.find(r => r.name === recordName && r.type === recordType);
@@ -114,7 +114,7 @@ router.post('/:zoneName/:recordName/:recordType/edit', async (req, res) => {
             port: req.body.port ? parseInt(req.body.port) : undefined
         };
 
-        await bindService.updateRecord(zoneName, oldRecord, newRecord);
+        await unboundService.updateRecord(zoneName, oldRecord, newRecord);
         res.redirect(`/zones/${zoneName}?success=` + encodeURIComponent('Record updated successfully'));
     } catch (error) {
         console.error('Error updating record:', error);

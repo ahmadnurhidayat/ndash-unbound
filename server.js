@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
 const fs = require('fs-extra');
-const bindService = require('./services/bindService');
+const unboundService = require('./services/unboundService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,31 +42,31 @@ app.use('/monitoring', monitoringRoutes);
 app.use('/statistics', statisticsRoutes);
 app.use('/activity', activityRoutes);
 
-// Initialize Bind service and start server
+// Initialize Unbound service and start server
 async function startServer() {
     try {
-        // Initialize Bind service
-        console.log('🔧 Initializing Bind service...');
-        await bindService.initialize();
+        // Initialize Unbound service
+        console.log('🔧 Initializing Unbound service...');
+        await unboundService.initialize();
         
-        // Check Bind status
-        const status = await bindService.getBindStatus();
+        // Check Unbound status
+        const status = await unboundService.getUnboundStatus();
         if (status.success) {
-            console.log('✓ Bind DNS server is running');
+            console.log('✓ Unbound DNS server is running');
         } else {
-            console.warn('⚠ Warning: Bind DNS server may not be running');
-            console.warn('  Run: sudo systemctl start bind9');
+            console.warn('⚠ Warning: Unbound DNS server may not be running');
+            console.warn('  Run: sudo systemctl start unbound');
         }
         
         // List existing zones
-        const zones = await bindService.listZones();
+        const zones = await unboundService.listZones();
         console.log(`✓ Found ${zones.length} existing zone(s)`);
         
         // Start Express server
         app.listen(PORT, () => {
             console.log('');
             console.log('═══════════════════════════════════════════');
-            console.log('  🚀 NDash - Bind DNS Management Dashboard');
+            console.log('  🚀 NDash - Unbound DNS Management Dashboard');
             console.log('═══════════════════════════════════════════');
             console.log(`  Server: http://localhost:${PORT}`);
             console.log(`  Zones:  ${zones.length} loaded`);
@@ -76,7 +76,7 @@ async function startServer() {
         });
     } catch (error) {
         console.error('✗ Failed to start server:', error.message);
-        console.error('  Please check Bind configuration and permissions');
+        console.error('  Please check Unbound configuration and permissions');
         process.exit(1);
     }
 }

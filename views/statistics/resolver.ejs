@@ -1,0 +1,568 @@
+<%- include('../partials/header-standalone') %>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h3 class="text-2xl font-bold text-gray-800">
+            <% if (status.running) { %>
+                <i class="fas fa-circle text-green-500 mr-2 animate-pulse"></i>
+            <% } else { %>
+                <i class="fas fa-circle text-red-500 mr-2"></i>
+            <% } %>
+            DNS Resolver Statistics
+        </h3>
+        <p class="text-gray-600 mt-1">Real-time performance metrics and analytics for Unbound DNS resolver</p>
+        <p class="text-xs text-gray-500 mt-1" id="lastUpdated">Last updated: <%= moment().format('YYYY-MM-DD HH:mm:ss') %></p>
+    </div>
+    <div class="flex gap-2 items-center">
+        <label class="flex items-center text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" id="autoRefresh" checked class="mr-2">
+            <span>Auto-refresh (10s)</span>
+        </label>
+        <button onclick="refreshStats()" class="btn-sm btn-primary">
+            <i class="fas fa-sync-alt mr-1" id="refresh-icon"></i>
+            Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Status & Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Resolver Status -->
+    <div class="stat-card <%= status.running ? 'border-green-500' : 'border-red-500' %>">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Resolver Status</p>
+                <p class="text-2xl font-bold <%= status.running ? 'text-green-600' : 'text-red-600' %>">
+                    <%= status.running ? 'Running' : 'Stopped' %>
+                </p>
+            </div>
+            <div class="w-12 h-12 <%= status.running ? 'bg-green-100' : 'bg-red-100' %> rounded-full flex items-center justify-center">
+                <i class="fas <%= status.running ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-600' %> text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            v<%= status.version || 'N/A' %> • <%= status.uptime || 'N/A' %>
+        </p>
+    </div>
+
+    <!-- Total Queries -->
+    <div class="stat-card border-blue-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Total Queries</p>
+                <p class="text-2xl font-bold text-blue-600" id="totalQueries"><%= metrics.queries.total.toLocaleString() %></p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-search text-blue-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            <%= performance.queriesPerSecond %> queries/sec
+        </p>
+    </div>
+
+    <!-- Cache Hits -->
+    <div class="stat-card border-green-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Cache Hits</p>
+                <p class="text-2xl font-bold text-green-600" id="cacheHits"><%= metrics.queries.cachehits.toLocaleString() %></p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-bolt text-green-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            <span id="hitRate"><%= metrics.queries.hitRate %></span>% hit rate
+        </p>
+    </div>
+
+    <!-- Cache Misses -->
+    <div class="stat-card border-orange-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Cache Misses</p>
+                <p class="text-2xl font-bold text-orange-600" id="cacheMisses"><%= metrics.queries.cachemiss.toLocaleString() %></p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-redo text-orange-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            Required recursion
+        </p>
+    </div>
+
+    <!-- Prefetch -->
+    <div class="stat-card border-purple-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Prefetch Queries</p>
+                <p class="text-2xl font-bold text-purple-600" id="prefetchQueries"><%= metrics.queries.prefetch.toLocaleString() %></p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-forward text-purple-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            Background refresh
+        </p>
+    </div>
+
+    <!-- Recursive -->
+    <div class="stat-card border-indigo-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Recursive Queries</p>
+                <p class="text-2xl font-bold text-indigo-600" id="recursiveQueries"><%= metrics.queries.recursion.toLocaleString() %></p>
+            </div>
+            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-layer-group text-indigo-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            Upstream lookups
+        </p>
+    </div>
+
+    <!-- DNSSEC Secure -->
+    <div class="stat-card border-teal-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">DNSSEC Secure</p>
+                <p class="text-2xl font-bold text-teal-600" id="dnssecSecure"><%= metrics.dnssec.secure.toLocaleString() %></p>
+            </div>
+            <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-shield-alt text-teal-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            Validated answers
+        </p>
+    </div>
+
+    <!-- DNSSEC Bogus -->
+    <div class="stat-card border-red-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">DNSSEC Bogus</p>
+                <p class="text-2xl font-bold text-red-600" id="dnssecBogus"><%= metrics.dnssec.bogus.toLocaleString() %></p>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+            Invalid signatures
+        </p>
+    </div>
+</div>
+
+<!-- Top Queried Domains -->
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-fire text-orange-500 mr-2"></i>
+            Top Queried Domains
+            <span class="text-sm text-gray-500 font-normal ml-2">(Last <%= topDomains.timeRange %>)</span>
+        </h3>
+    </div>
+    <div class="card-body">
+        <% if (topDomains.domains && topDomains.domains.length > 0) { %>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="w-12">#</th>
+                            <th>Domain</th>
+                            <th class="text-right">Queries</th>
+                            <th class="text-right w-32">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topDomainsTable">
+                        <% topDomains.domains.forEach((domain, index) => { %>
+                            <tr>
+                                <td class="text-gray-500"><%= index + 1 %></td>
+                                <td class="font-mono text-sm">
+                                    <i class="fas fa-globe text-blue-500 mr-2"></i>
+                                    <%= domain.domain %>
+                                </td>
+                                <td class="text-right font-semibold"><%= domain.count.toLocaleString() %></td>
+                                <td class="text-right">
+                                    <div class="flex items-center justify-end">
+                                        <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: <%= domain.percentage %>%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-600"><%= domain.percentage %>%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-600">
+                <i class="fas fa-info-circle mr-2"></i>
+                Total unique queries in this period: <strong><%= topDomains.total.toLocaleString() %></strong>
+            </div>
+        <% } else { %>
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-search text-4xl mb-4"></i>
+                <p>No query data available</p>
+                <p class="text-sm mt-2">Enable query logging in resolver settings to see top domains</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Cache Performance Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Cache Performance</h3>
+        </div>
+        <div class="card-body">
+            <div style="position: relative; height: 300px;">
+                <canvas id="cacheChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Query Types Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Query Types Distribution</h3>
+        </div>
+        <div class="card-body">
+            <div style="position: relative; height: 300px;">
+                <canvas id="queryTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Usage Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Memory Usage</h3>
+        </div>
+        <div class="card-body">
+            <div style="position: relative; height: 300px;">
+                <canvas id="memoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Response Codes Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Answer Response Codes</h3>
+        </div>
+        <div class="card-body">
+            <div style="position: relative; height: 300px;">
+                <canvas id="rcodesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">Cache Statistics</h3>
+    </div>
+    <div class="card-body">
+        <div class="overflow-x-auto">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Cache Type</th>
+                        <th>Entries</th>
+                        <th>Memory Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Message Cache</td>
+                        <td><%= metrics.cache.msgSize.toLocaleString() %></td>
+                        <td><%= metrics.memory.msgCache %> MB</td>
+                    </tr>
+                    <tr>
+                        <td>RRset Cache</td>
+                        <td><%= metrics.cache.rrsetSize.toLocaleString() %></td>
+                        <td><%= metrics.memory.rrsetCache %> MB</td>
+                    </tr>
+                    <tr>
+                        <td>Infrastructure Cache</td>
+                        <td><%= metrics.cache.infra.toLocaleString() %></td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Key Cache</td>
+                        <td><%= metrics.cache.key.toLocaleString() %></td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Metrics -->
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">Performance Metrics</h3>
+    </div>
+    <div class="card-body">
+        <div class="overflow-x-auto">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Queries Per Second</td>
+                        <td><%= performance.queriesPerSecond %></td>
+                    </tr>
+                    <tr>
+                        <td>Average Recursion Time</td>
+                        <td><%= performance.avgRecursionTime %> sec</td>
+                    </tr>
+                    <tr>
+                        <td>Median Recursion Time</td>
+                        <td><%= performance.medianRecursionTime %> sec</td>
+                    </tr>
+                    <tr>
+                        <td>Request List Average</td>
+                        <td><%= metrics.requestlist.avg %></td>
+                    </tr>
+                    <tr>
+                        <td>Request List Maximum</td>
+                        <td><%= metrics.requestlist.max %></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize charts
+let cacheChart, queryTypesChart, memoryChart, rcodesChart;
+let autoRefreshInterval;
+
+        function initCharts() {
+            // Cache Performance Chart
+            const cacheCtx = document.getElementById('cacheChart').getContext('2d');
+            cacheChart = new Chart(cacheCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cache Hits', 'Cache Misses'],
+                    datasets: [{
+                        data: [<%= metrics.queries.cachehits %>, <%= metrics.queries.cachemiss %>],
+                        backgroundColor: ['#27ae60', '#f39c12'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Query Types Chart
+            const queryTypesData = <%- JSON.stringify(queryTypes) %>;
+            const queryTypesCtx = document.getElementById('queryTypesChart').getContext('2d');
+            queryTypesChart = new Chart(queryTypesCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(queryTypesData),
+                    datasets: [{
+                        label: 'Queries',
+                        data: Object.values(queryTypesData),
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Memory Usage Chart
+            const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+            memoryChart = new Chart(memoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Message Cache', 'RRset Cache', 'Iterator Module', 'Validator Module'],
+                    datasets: [{
+                        label: 'Memory (MB)',
+                        data: [
+                            <%= metrics.memory.msgCache %>,
+                            <%= metrics.memory.rrsetCache %>,
+                            <%= metrics.memory.modIterator %>,
+                            <%= metrics.memory.modValidator %>
+                        ],
+                        backgroundColor: ['#3498db', '#9b59b6', '#e74c3c', '#f39c12'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Response Codes Chart
+            const rcodesData = <%- JSON.stringify(answerRcodes) %>;
+            const rcodesCtx = document.getElementById('rcodesChart').getContext('2d');
+            rcodesChart = new Chart(rcodesCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(rcodesData),
+                    datasets: [{
+                        data: Object.values(rcodesData),
+                        backgroundColor: [
+                            '#27ae60',
+                            '#e74c3c',
+                            '#f39c12',
+                            '#3498db',
+                            '#9b59b6',
+                            '#95a5a6'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            // Update cache chart
+            cacheChart.data.datasets[0].data = [
+                data.metrics.queries.cachehits,
+                data.metrics.queries.cachemiss
+            ];
+            cacheChart.update();
+
+            // Update query types chart
+            queryTypesChart.data.labels = Object.keys(data.queryTypes);
+            queryTypesChart.data.datasets[0].data = Object.values(data.queryTypes);
+            queryTypesChart.update();
+
+            // Update memory chart
+            memoryChart.data.datasets[0].data = [
+                parseFloat(data.metrics.memory.msgCache),
+                parseFloat(data.metrics.memory.rrsetCache),
+                parseFloat(data.metrics.memory.modIterator),
+                parseFloat(data.metrics.memory.modValidator)
+            ];
+            memoryChart.update();
+
+            // Update rcodes chart
+            rcodesChart.data.labels = Object.keys(data.answerRcodes);
+            rcodesChart.data.datasets[0].data = Object.values(data.answerRcodes);
+    rcodesChart.update();
+}
+
+async function refreshStats() {
+    const refreshIcon = document.getElementById('refresh-icon');
+    refreshIcon.classList.add('fa-spin');
+    
+    try {
+        const response = await fetch('/statistics/resolver/api');
+        const result = await response.json();
+        
+        if (result.success) {
+            const data = result.data;
+            
+            // Update stat cards
+            document.getElementById('totalQueries').textContent = data.metrics.queries.total.toLocaleString();
+            document.getElementById('cacheHits').textContent = data.metrics.queries.cachehits.toLocaleString();
+            document.getElementById('hitRate').textContent = data.metrics.queries.hitRate;
+            document.getElementById('cacheMisses').textContent = data.metrics.queries.cachemiss.toLocaleString();
+            document.getElementById('prefetchQueries').textContent = data.metrics.queries.prefetch.toLocaleString();
+            document.getElementById('recursiveQueries').textContent = data.metrics.queries.recursion.toLocaleString();
+            document.getElementById('dnssecSecure').textContent = data.metrics.dnssec.secure.toLocaleString();
+            document.getElementById('dnssecBogus').textContent = data.metrics.dnssec.bogus.toLocaleString();
+            
+            // Update charts
+            updateCharts(data);
+            
+            // Update timestamp
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = 
+                'Last updated: ' + now.toISOString().slice(0, 19).replace('T', ' ');
+        }
+    } catch (error) {
+        console.error('Error refreshing stats:', error);
+    } finally {
+        refreshIcon.classList.remove('fa-spin');
+    }
+}
+
+// Auto-refresh functionality
+document.getElementById('autoRefresh').addEventListener('change', function(e) {
+    if (e.target.checked) {
+        autoRefreshInterval = setInterval(refreshStats, 10000);
+    } else {
+        clearInterval(autoRefreshInterval);
+    }
+});
+
+// Initialize charts on page load
+window.addEventListener('load', () => {
+    initCharts();
+    // Start auto-refresh
+    autoRefreshInterval = setInterval(refreshStats, 10000);
+});
+
+// Clean up interval on page unload
+window.addEventListener('beforeunload', () => {
+    clearInterval(autoRefreshInterval);
+});
+</script>
+
+<%- include('../partials/footer-standalone') %>

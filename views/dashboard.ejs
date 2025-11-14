@@ -16,9 +16,9 @@
             <i class="fas fa-list text-3xl text-purple-600 mb-2"></i>
             <span class="text-sm font-medium text-gray-700">All Records</span>
         </a>
-        <button onclick="reloadBind()" class="quick-action-card cursor-pointer">
+        <button onclick="reloadUnbound()" class="quick-action-card cursor-pointer">
             <i class="fas fa-sync-alt text-3xl text-orange-600 mb-2" id="reload-icon"></i>
-            <span class="text-sm font-medium text-gray-700">Reload Bind</span>
+            <span class="text-sm font-medium text-gray-700">Reload Unbound</span>
         </button>
         <a href="/statistics" class="quick-action-card">
             <i class="fas fa-chart-line text-3xl text-indigo-600 mb-2"></i>
@@ -184,7 +184,7 @@
 </div>
 
 <script>
-function reloadBind() {
+function reloadUnbound() {
     const icon = document.getElementById('reload-icon');
     icon.classList.add('fa-spin');
     
@@ -217,7 +217,7 @@ function reloadBind() {
         // Show error message
         const message = document.createElement('div');
         message.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-        message.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Failed to reload Bind';
+    message.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Failed to reload Unbound';
         document.body.appendChild(message);
         
         setTimeout(() => {
