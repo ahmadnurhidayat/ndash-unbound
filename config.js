@@ -12,7 +12,12 @@ module.exports = {
         controlCommand: 'unbound-control',
         checkCommand: 'unbound-checkconf',
         reloadCommand: 'unbound-control reload',
-        includesDir: '/etc/unbound/local.d'
+        includesDir: '/etc/unbound/local.d',
+        tlsCert: '/etc/unbound/unbound_server.pem',
+        tlsKey: '/etc/unbound/unbound_server.key',
+        dotPort: 853,
+        dohPort: 443,
+        dohEndpoint: '/dns-query'
     },
 
     // Session Configuration

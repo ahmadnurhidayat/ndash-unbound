@@ -5,7 +5,7 @@
  * Tests all CRUD operations via the Bind service
  */
 
-const bindService = require('./services/bindService');
+const bindService = require('../services/bindService');
 
 console.log('🧪 NDash Bind Service - Command Line Test');
 console.log('==========================================\n');

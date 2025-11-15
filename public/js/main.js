@@ -3,16 +3,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
     initTooltips();
-    
+
     // Auto-hide alerts
     autoHideAlerts();
-    
+
     // Confirm delete actions
     initDeleteConfirms();
-    
+
     // Real-time clock update
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Handle escape key to close sidebar on mobile
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeSidebar();
+        }
+    });
 });
 
 function initTooltips() {
@@ -114,11 +121,49 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
     
     setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// Mobile sidebar functions
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+
+    if (sidebar && overlay) {
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+        if (isOpen) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    }
+}
+
+function openSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+
+    if (sidebar && overlay) {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+
+    if (sidebar && overlay) {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        document.body.style.overflow = ''; // Restore scrolling
+    }
 }

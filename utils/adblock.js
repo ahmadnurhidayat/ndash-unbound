@@ -71,12 +71,28 @@ async function initialize() {
 }
 
 /**
- * Download a blocklist from URL
+ * Download a blocklist from URL or copy local file
  */
 async function downloadBlocklist(url, filename) {
-    return new Promise((resolve, reject) => {
-        const protocol = url.startsWith('https') ? https : http;
+    return new Promise(async (resolve, reject) => {
         const filepath = path.join(BLOCKLIST_DIR, filename);
+        
+        // Handle local files
+        if (url.startsWith('file:')) {
+            const localPath = url.substring(5); // Remove 'file:' prefix
+            
+            try {
+                await fs.copy(localPath, filepath);
+                console.log(`✓ Copied local file ${filename}`);
+                resolve(filepath);
+            } catch (error) {
+                reject(new Error(`Failed to copy local file: ${error.message}`));
+            }
+            return;
+        }
+        
+        // Handle remote URLs
+        const protocol = url.startsWith('https') ? https : http;
         const file = fs.createWriteStream(filepath);
         
         protocol.get(url, (response) => {
@@ -105,15 +121,15 @@ async function downloadBlocklist(url, filename) {
 function parseHostsFile(content) {
     const domains = new Set();
     const lines = content.split('\n');
-    
+
     for (const line of lines) {
         const trimmed = line.trim();
-        
+
         // Skip comments and empty lines
         if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('!')) {
             continue;
         }
-        
+
         // Parse hosts file format: 0.0.0.0 domain.com or 127.0.0.1 domain.com
         const match = trimmed.match(/^(?:0\.0\.0\.0|127\.0\.0\.1)\s+([a-z0-9][a-z0-9\-\.]*[a-z0-9])$/i);
         if (match) {
@@ -121,6 +137,30 @@ function parseHostsFile(content) {
             if (domain && domain !== 'localhost' && !domain.startsWith('localhost.')) {
                 domains.add(domain);
             }
+        }
+    }
+
+    return Array.from(domains);
+}
+
+/**
+ * Parse simple domain list format (one domain per line)
+ */
+function parseDomainList(content) {
+    const domains = new Set();
+    const lines = content.split('\n');
+    
+    for (const line of lines) {
+        const trimmed = line.trim();
+        
+        // Skip comments, empty lines, and invalid domains
+        if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('!')) {
+            continue;
+        }
+        
+        // Basic domain validation
+        if (/^[a-z0-9][a-z0-9\-\.]*[a-z0-9]$/i.test(trimmed)) {
+            domains.add(trimmed.toLowerCase());
         }
     }
     
@@ -160,6 +200,44 @@ function parseAdBlockFormat(content) {
 }
 
 /**
+ * Load whitelist from disk
+ */
+async function loadWhitelist() {
+    try {
+        const data = await fs.readJson(WHITELIST_FILE);
+        return data.domains || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+/**
+ * Save whitelist to disk
+ */
+async function saveWhitelist(domains) {
+    try {
+        await fs.writeJson(WHITELIST_FILE, { domains }, { spaces: 2 });
+        return true;
+    } catch (error) {
+        console.error('Error saving whitelist:', error);
+        return false;
+    }
+}
+
+/**
+ * Add domain to whitelist
+ */
+async function addToWhitelist(domain) {
+    const whitelist = await loadWhitelist();
+    const normalized = domain.toLowerCase();
+    if (!whitelist.includes(normalized)) {
+        whitelist.push(normalized);
+        await saveWhitelist(whitelist);
+    }
+    return whitelist;
+}
+
+/**
  * Update blocklists from sources
  */
 async function updateBlocklists(sources = null) {
@@ -184,10 +262,11 @@ async function updateBlocklists(sources = null) {
         if (!source) continue;
         
         try {
+
             console.log(`Downloading ${source.name}...`);
             const filename = `${sourceKey}.txt`;
             const filepath = await downloadBlocklist(source.url, filename);
-            
+
             // Parse the downloaded file
             const content = await fs.readFile(filepath, 'utf8');
             let domains;
@@ -215,46 +294,9 @@ async function updateBlocklists(sources = null) {
                 error: error.message
             });
         }
+        
     }
-    
     return results;
-}
-
-/**
- * Load whitelist
- */
-async function loadWhitelist() {
-    try {
-        const data = await fs.readJson(WHITELIST_FILE);
-        return data.domains || [];
-    } catch (error) {
-        return [];
-    }
-}
-
-/**
- * Save whitelist
- */
-async function saveWhitelist(domains) {
-    try {
-        await fs.writeJson(WHITELIST_FILE, { domains }, { spaces: 2 });
-        return true;
-    } catch (error) {
-        console.error('Error saving whitelist:', error);
-        return false;
-    }
-}
-
-/**
- * Add domain to whitelist
- */
-async function addToWhitelist(domain) {
-    const whitelist = await loadWhitelist();
-    if (!whitelist.includes(domain)) {
-        whitelist.push(domain.toLowerCase());
-        await saveWhitelist(whitelist);
-    }
-    return whitelist;
 }
 
 /**
@@ -291,6 +333,9 @@ async function generateAdblockConfig(enabled = true) {
             let domains;
             if (content.includes('0.0.0.0') || content.includes('127.0.0.1')) {
                 domains = parseHostsFile(content);
+            } else if (/^komdigi(_|-)part_/.test(file) || file.startsWith('komdigi_')) {
+                // Use domain list parser for komdigi
+                domains = parseDomainList(content);
             } else {
                 domains = parseAdBlockFormat(content);
             }

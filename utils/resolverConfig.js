@@ -94,6 +94,24 @@ server:
     config += `    do-not-query-localhost: no\n`;
     config += `\n`;
     
+    // DNS over TLS (DoT) Configuration
+    if (settings.unbound && settings.unbound.dotEnabled) {
+        config += `    # DNS over TLS (DoT) Configuration\n`;
+        config += `    tls-service-key: "/etc/unbound/unbound_server.key"\n`;
+        config += `    tls-service-pem: "/etc/unbound/unbound_server.pem"\n`;
+        config += `    tls-port: ${settings.unbound.dotPort || 853}\n`;
+        config += `\n`;
+    }
+    
+    // DNS over HTTPS (DoH) Configuration
+    if (settings.unbound && settings.unbound.dohEnabled) {
+        config += `    # DNS over HTTPS (DoH) Configuration\n`;
+        config += `    https-port: ${settings.unbound.dohPort || 443}\n`;
+        config += `    http-endpoint: "${settings.unbound.dohEndpoint || '/dns-query'}"\n`;
+        config += `    http-user-agent: "NDash-Unbound/1.0"\n`;
+        config += `\n`;
+    }
+    
     // Forwarding
     if (resolver.forwardingEnabled && resolver.upstreamDNS.length > 0) {
         config += `# Forward all queries to upstream DNS\n`;

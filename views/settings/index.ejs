@@ -19,9 +19,9 @@
     </div>
 <% } %>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
     <!-- Unbound Configuration -->
-    <div class="lg:col-span-2 space-y-6">
+    <div class="xl:col-span-2 space-y-4 lg:space-y-6">
         <!-- Server Information -->
         <div class="content-card">
             <div class="flex items-center justify-between mb-4">
@@ -35,7 +35,7 @@
                 </button>
             </div>
             
-            <div class="grid grid-cols-2 gap-4" id="server-info">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="server-info">
                 <div class="border-l-4 border-blue-500 pl-4">
                     <p class="text-sm text-gray-600">Unbound Version</p>
                     <p class="text-lg font-semibold text-gray-800"><%= settings.unbound ? settings.unbound.version : 'N/A' %></p>
@@ -281,6 +281,37 @@
                                 <input type="checkbox" name="dnssec" <%= settings.resolver && settings.resolver.security.dnssec ? 'checked' : '' %>>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Encrypted DNS Protocols -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Encrypted DNS Protocols</label>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-lock text-blue-600"></i>
+                                    <div>
+                                        <span class="text-sm font-medium">DNS over TLS (DoT)</span>
+                                        <span class="text-xs text-gray-500 block">Port <%= settings.unbound && settings.unbound.dotPort ? settings.unbound.dotPort : 853 %></span>
+                                    </div>
+                                </div>
+                                <input type="checkbox" name="dotEnabled" <%= settings.unbound && settings.unbound.dotEnabled ? 'checked' : '' %>>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-shield-alt text-green-600"></i>
+                                    <div>
+                                        <span class="text-sm font-medium">DNS over HTTPS (DoH)</span>
+                                        <span class="text-xs text-gray-500 block">Port <%= settings.unbound && settings.unbound.dohPort ? settings.unbound.dohPort : 443 %> • Endpoint: <%= settings.unbound && settings.unbound.dohEndpoint ? settings.unbound.dohEndpoint : '/dns-query' %></span>
+                                    </div>
+                                </div>
+                                <input type="checkbox" name="dohEnabled" <%= settings.unbound && settings.unbound.dohEnabled ? 'checked' : '' %>>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Encrypted DNS protocols provide privacy and security for DNS queries
+                        </p>
                     </div>
 
                     <!-- Access Control -->

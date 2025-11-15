@@ -17,7 +17,12 @@ const DEFAULT_SETTINGS = {
         confPath: '/etc/unbound/unbound.conf',
         localZonesPath: '/etc/unbound/local.d',
         controlSocket: '/var/run/unbound.ctl',
-        logFile: '/var/log/unbound.log'
+        logFile: '/var/log/unbound.log',
+        dotEnabled: true,
+        dotPort: 853,
+        dohEnabled: true,
+        dohPort: 443,
+        dohEndpoint: '/dns-query'
     },
     resolver: {
         enabled: true,
@@ -144,6 +149,10 @@ async function updateSettings(updates) {
         unbound: {
             ...currentSettings.unbound,
             ...updates.unbound
+        },
+        resolver: {
+            ...currentSettings.resolver,
+            ...updates.resolver
         }
     };
     await saveSettings(newSettings);

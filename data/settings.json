@@ -11,7 +11,12 @@
     "confPath": "/etc/unbound/unbound.conf",
     "localZonesPath": "/etc/unbound/local.d",
     "controlSocket": "/var/run/unbound.ctl",
-    "logFile": "/var/log/unbound.log"
+    "logFile": "/var/log/unbound.log",
+    "dotEnabled": true,
+    "dotPort": 853,
+    "dohEnabled": true,
+    "dohPort": 443,
+    "dohEndpoint": "/dns-query"
   },
   "resolver": {
     "enabled": true,
@@ -85,9 +90,9 @@
       ]
     },
     "logging": {
-      "verbosity": 1,
-      "logQueries": false,
-      "logReplies": false
+      "verbosity": 2,
+      "logQueries": true,
+      "logReplies": true
     }
   },
   "adblock": {
@@ -96,8 +101,10 @@
       "stevenblack": true,
       "adguard": true,
       "malware": true,
-      "easylist": false,
-      "tracking": false
+      "easylist": true,
+      "tracking": true,
+      "geoghegan": true,
+      "komdigi": false
     },
     "autoUpdate": true,
     "updateInterval": 24,

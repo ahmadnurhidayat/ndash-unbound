@@ -195,7 +195,14 @@ router.post('/resolver', async (req, res) => {
         };
         
         // Update settings
-        const updates = { resolver };
+        const updates = { 
+            resolver,
+            unbound: {
+                ...currentSettings.unbound,
+                dotEnabled: req.body.dotEnabled === 'on',
+                dohEnabled: req.body.dohEnabled === 'on'
+            }
+        };
         await settingsUtil.updateSettings(updates);
         
         // Apply configuration
