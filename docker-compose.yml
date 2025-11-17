@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  ndash:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - ndash-data:/app/data
+    restart: unless-stopped
+    networks:
+      - ndash-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  ndash-data:
+    driver: local
+
+networks:
+  ndash-network:
+    driver: bridge
