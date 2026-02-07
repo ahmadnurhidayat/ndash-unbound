@@ -1,98 +1,111 @@
 # ✅ Unbound Resolver - Quick Reference
 
 ## Status
-**Unbound sekarang berfungsi sebagai DNS Resolver!**
+
+**Unbound is now functioning as a DNS Resolver!**
 
 ---
 
-## 🎯 Kemampuan
+## 🎯 Capabilities
 
-1. **Resolve domain internet** (google.com, facebook.com, dll)
-2. **Resolve local zones** yang dikelola NDash (dionipe.id, dll)
-3. **DNS Caching** untuk performa lebih cepat
-4. **Forward ke DNS public** (Cloudflare 1.1.1.1 & Google 8.8.8.8)
+1. **Resolve internet domains** (google.com, facebook.com, etc.)
+2. **Resolve local zones** managed by NDash (dionipe.id, etc.)
+3. **DNS Caching** for faster performance
+4. **Forward to public DNS** (Cloudflare 1.1.1.1 & Google 8.8.8.8)
 
 ---
 
-## ✅ Pengujian
+## ✅ Testing
 
 ### Test Internet Domain
+
 ```bash
 dig @127.0.0.1 google.com +short
-# atau
+# or
 nslookup google.com 127.0.0.1
 ```
 
 ### Test Local Zone
+
 ```bash
 dig @127.0.0.1 dionipe.id +short
 # Output: 127.0.0.1
 ```
 
-### Test dari Client Lain
-Dari komputer lain di jaringan:
+### Test from Another Client
+
+From another computer on the network:
+
 ```bash
-dig @IP_SERVER_ANDA dionipe.id +short
+dig @YOUR_SERVER_IP dionipe.id +short
 ```
 
 ---
 
-## 🔧 Command Berguna
+## 🔧 Useful Commands
 
-### Cek Status
+### Check Status
+
 ```bash
 sudo systemctl status unbound
 sudo unbound-control status
 ```
 
 ### Reload Configuration
+
 ```bash
 sudo unbound-control reload
 ```
 
 ### Clear Cache
+
 ```bash
 sudo unbound-control flush_zone .
 ```
 
-### Lihat Statistik
+### View Statistics
+
 ```bash
 sudo unbound-control stats
 ```
 
 ---
 
-## 🌐 Menggunakan sebagai DNS Server
+## 🌐 Using as DNS Server
 
-### Di Client Linux
+### On Linux Client
+
 ```bash
 # Temporary
-sudo systemd-resolve --set-dns=IP_SERVER_UNBOUND --interface=eth0
+sudo systemd-resolve --set-dns=UNBOUND_SERVER_IP --interface=eth0
 
 # Permanent - Edit /etc/systemd/resolved.conf
 [Resolve]
-DNS=IP_SERVER_UNBOUND
+DNS=UNBOUND_SERVER_IP
 ```
 
-### Di Client Windows
+### On Windows Client
+
 ```
 Control Panel > Network and Internet > Network Connections
 Right-click adapter > Properties > IPv4 > Properties
 Use the following DNS server addresses:
-Preferred DNS server: IP_SERVER_UNBOUND
+Preferred DNS server: UNBOUND_SERVER_IP
 ```
 
-### Di Router
-Set DNS server di DHCP settings ke IP server Unbound ini.
-Semua device di jaringan akan otomatis menggunakan DNS ini.
+### On Router
+
+Set DNS server in DHCP settings to this Unbound server IP.
+All devices on the network will automatically use this DNS.
 
 ---
 
 ## 📊 Monitoring via NDash
 
-Akses dashboard: `http://localhost:3000/monitoring`
+Access dashboard: `http://localhost:3000/monitoring`
 
-Akan menampilkan:
+Will display:
+
 - ✅ Unbound status (running/stopped)
 - 📊 Query statistics
 - 💾 Cache hit rate
@@ -100,79 +113,85 @@ Akan menampilkan:
 
 ---
 
-## ⚙️ Konfigurasi
+## ⚙️ Configuration
 
 File: `/etc/unbound/unbound.conf.d/ndash-resolver.conf`
 
-### Menambah Network yang Diizinkan
+### Add Allowed Networks
 
-Edit file config dan tambahkan:
+Edit config file and add:
+
 ```conf
 server:
     access-control: 203.0.113.0/24 allow
 ```
 
 Reload:
+
 ```bash
 sudo unbound-control reload
 ```
 
-### Mengubah Upstream DNS
+### Change Upstream DNS
 
-Edit forward-zone di config:
+Edit forward-zone in config:
+
 ```conf
 forward-zone:
     name: "."
     forward-addr: 1.1.1.1@53    # Cloudflare
     forward-addr: 8.8.8.8@53    # Google
-    # Atau gunakan DNS ISP Anda
+    # Or use your ISP DNS
 ```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Tidak bisa resolve domain internet
+### Cannot resolve internet domains
+
 ```bash
-# Cek upstream DNS
+# Check upstream DNS
 dig @1.1.1.1 google.com
 
-# Cek logs
+# Check logs
 sudo journalctl -u unbound -n 50
 
 # Restart service
 sudo systemctl restart unbound
 ```
 
-### Local zone tidak work
+### Local zone not working
+
 ```bash
-# Cek zone loaded
+# Check zone loaded
 sudo unbound-control list_local_zones | grep dionipe
 
 # Reload zones
 sudo unbound-control reload
 
-# Cek file zone
+# Check zone file
 cat /etc/unbound/local.d/dionipe.id.conf
 ```
 
 ### Query timeout
+
 ```bash
-# Cek Unbound running
+# Check Unbound running
 sudo systemctl status unbound
 
-# Cek port 53 listening
+# Check port 53 listening
 sudo ss -tlnp | grep :53
 
-# Cek firewall
+# Check firewall
 sudo iptables -L -n | grep 53
 ```
 
 ---
 
-## 📖 Dokumentasi Lengkap
+## 📖 Complete Documentation
 
-Lihat file: **`UNBOUND_RESOLVER_GUIDE.md`**
+See file: **`UNBOUND_RESOLVER_GUIDE.md`**
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## ✅ Status: PRODUCTION READY WITH BIND INTEGRATION
 
-**NDash** adalah aplikasi web management untuk **Bind9 DNS Server** dengan antarmuka modern dan mudah digunakan.
+**NDash** is a web management application for **Bind9 DNS Server** with a modern and user-friendly interface.
 
 ---
 
@@ -13,13 +13,14 @@ cd /opt/ndash
 npm start
 ```
 
-Akses: **http://localhost:3000**
+Access: **http://localhost:3000**
 
 ---
 
 ## 📊 Current Status
 
 ### 🟢 Operational
+
 - **Server**: Running on port 3000
 - **Bind9**: Active and integrated
 - **Zones**: 2 zones loaded
@@ -27,6 +28,7 @@ Akses: **http://localhost:3000**
 - **Integration**: Fully functional
 
 ### 🎯 Features
+
 - ✅ Real-time Bind integration
 - ✅ Web-based DNS management
 - ✅ Auto zone file generation
@@ -39,15 +41,18 @@ Akses: **http://localhost:3000**
 ## 📚 Documentation Index
 
 ### Getting Started
-- **[QUICKSTART.md](QUICKSTART.md)** - Panduan cepat untuk mulai menggunakan
-- **[README.md](README.md)** - Dokumentasi utama aplikasi
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Quick guide to get started
+- **[README.md](README.md)** - Main application documentation
 
 ### Bind Integration
+
 - **[POC-SUMMARY.md](POC-SUMMARY.md)** - ⭐ **Start here!** Complete PoC summary
 - **[POC-BIND-INTEGRATION.md](POC-BIND-INTEGRATION.md)** - Detailed PoC documentation
 - **[BIND_POC.md](BIND_POC.md)** - PoC testing guide
 
 ### Deployment & Structure
+
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment guide
 - **[STRUCTURE.md](STRUCTURE.md)** - Project structure details
 - **[COMPLETION.md](COMPLETION.md)** - Project completion summary
@@ -57,6 +62,7 @@ Akses: **http://localhost:3000**
 ## 🛠️ Tools & Commands
 
 ### Start Server
+
 ```bash
 npm start              # Production mode
 npm run dev           # Development mode (auto-reload)
@@ -64,6 +70,7 @@ npm run dev           # Development mode (auto-reload)
 ```
 
 ### Bind Management
+
 ```bash
 ./bind-helper.sh status        # Check Bind status
 ./bind-helper.sh list          # List all zones
@@ -74,6 +81,7 @@ npm run dev           # Development mode (auto-reload)
 ```
 
 ### Testing
+
 ```bash
 node test-bind.js             # Run integration tests
 dig @localhost <zone> ANY     # Test DNS resolution
@@ -121,26 +129,30 @@ dig @localhost <zone> ANY     # Test DNS resolution
 ## 🎯 Main Features
 
 ### 1. Dashboard
-- Overview statistik DNS zones
-- Quick actions untuk akses cepat
-- Recent zones dan activities
-- Real-time data dari Bind
+
+- Overview of DNS zones statistics
+- Quick actions for fast access
+- Recent zones and activities
+- Real-time data from Bind
 
 ### 2. Zone Management
-- List semua zones dari Bind
-- Create zone dengan auto-generate file
-- Delete zone dengan cleanup
-- View zone details dengan records
+
+- List all zones from Bind
+- Create zone with auto-generate file
+- Delete zone with cleanup
+- View zone details with records
 - Zone file validation
 
 ### 3. Record Management
+
 - Add records: A, AAAA, CNAME, MX, TXT, NS, PTR, SRV
 - Delete records
 - SOA serial auto-increment
 - Automatic Bind reload
 
 ### 4. Integration
-- Real-time sync dengan Bind9
+
+- Real-time sync with Bind9
 - Zone files as source of truth
 - Automatic configuration updates
 - Immediate DNS resolution
@@ -150,6 +162,7 @@ dig @localhost <zone> ANY     # Test DNS resolution
 ## 🧪 Verified Working
 
 ### ✅ All Tests Passed
+
 ```
 Service Initialization:  ✅ PASSED
 Zone Creation:          ✅ PASSED
@@ -160,6 +173,7 @@ Zone Deletion:          ✅ PASSED
 ```
 
 ### ✅ DNS Resolution
+
 ```bash
 # SOA Record
 dig @localhost poc-test.local SOA +short
@@ -179,16 +193,19 @@ dig @localhost poc-test.local NS +short
 ## 📊 Technical Details
 
 ### Backend
+
 - **Framework**: Express.js 4.18.2
 - **Template**: EJS 3.1.9
 - **Integration**: Native Bind9 file management
 
 ### Frontend
+
 - **CSS**: Tailwind CSS 2.2.19
 - **Icons**: Font Awesome 6.4.0
 - **Design**: Shadcn-UI inspired
 
 ### DNS Server
+
 - **Server**: Bind9 (9.18.28)
 - **Status**: Active (running)
 - **Memory**: 2.1%
@@ -199,6 +216,7 @@ dig @localhost poc-test.local NS +short
 ## 🔧 Configuration
 
 ### Application (`config.js`)
+
 ```javascript
 bind: {
     zonesPath: '/etc/bind/zones',
@@ -208,6 +226,7 @@ bind: {
 ```
 
 ### Bind Files
+
 - **Config**: `/etc/bind/named.conf.local`
 - **Zones**: `/etc/bind/zones/db.*`
 - **Logs**: `journalctl -u bind9`
@@ -217,18 +236,21 @@ bind: {
 ## 💡 Usage Examples
 
 ### Create Zone via Web
+
 1. Open http://localhost:3000
 2. Click "Create New Zone"
 3. Enter zone name: `example.local`
 4. Submit → Zone created & active!
 
 ### Add DNS Record
+
 1. Open zone detail
 2. Click "Add Record"
 3. Fill form (name, type, value)
 4. Submit → Record immediately resolves!
 
 ### Test DNS
+
 ```bash
 # Test the zone
 dig @localhost example.local ANY
@@ -242,12 +264,14 @@ dig @localhost www.example.local A
 ## 🔐 Security Notes
 
 ### Implemented
+
 - ✅ Zone validation
 - ✅ Config backup
 - ✅ Error handling
 - ✅ Atomic operations
 
 ### For Production
+
 - [ ] Add authentication
 - [ ] Enable HTTPS
 - [ ] Implement RBAC
@@ -259,12 +283,14 @@ dig @localhost www.example.local A
 ## 🚀 Deployment
 
 ### Development
+
 ```bash
 npm run dev
 # Access: http://localhost:3000
 ```
 
 ### Production with PM2
+
 ```bash
 npm install -g pm2
 pm2 start server.js --name ndash
@@ -273,6 +299,7 @@ pm2 startup
 ```
 
 ### Systemd Service
+
 ```bash
 sudo cp ndash.service /etc/systemd/system/
 sudo systemctl enable ndash
@@ -296,6 +323,7 @@ See **[DEPLOYMENT.md](DEPLOYMENT.md)** for details.
 ## 🐛 Troubleshooting
 
 ### Quick Fixes
+
 ```bash
 # Check Bind status
 ./bind-helper.sh status
@@ -314,6 +342,7 @@ See **[DEPLOYMENT.md](DEPLOYMENT.md)** for details.
 ```
 
 ### Common Issues
+
 1. **Permission denied**: Run `./bind-helper.sh fix-perms`
 2. **Zone not resolving**: Check `./bind-helper.sh test-zone <name>`
 3. **Config errors**: Run `./bind-helper.sh check`
@@ -346,12 +375,14 @@ pm2 logs ndash                     # Follow app logs
 ## 🎓 Learn More
 
 ### Documentation Files
+
 - **POC-SUMMARY.md** - ⭐ Complete PoC overview
 - **QUICKSTART.md** - Quick start guide
 - **DEPLOYMENT.md** - Production deployment
 - **STRUCTURE.md** - Project architecture
 
 ### Helper Scripts
+
 - **bind-helper.sh** - Management CLI
 - **test-bind.js** - Integration tests
 - **start.sh** - Quick start
@@ -361,6 +392,7 @@ pm2 logs ndash                     # Follow app logs
 ## 🎉 Success Metrics
 
 ### ✅ All Working
+
 - Real-time Bind integration
 - Web-based management
 - DNS resolution
@@ -370,6 +402,7 @@ pm2 logs ndash                     # Follow app logs
 - Tests passing
 
 ### 🎯 Ready For
+
 - ✅ Development
 - ✅ Testing
 - ✅ Staging
@@ -389,6 +422,7 @@ pm2 logs ndash                     # Follow app logs
 ## 🌟 Highlights
 
 ### What Makes NDash Great
+
 1. **Real-time Integration** - Direct Bind9 integration
 2. **User Friendly** - Modern web interface
 3. **Production Ready** - Robust error handling
@@ -401,16 +435,19 @@ pm2 logs ndash                     # Follow app logs
 ## 🎊 Getting Help
 
 ### Documentation
+
 - Read **POC-SUMMARY.md** for complete overview
 - Check **QUICKSTART.md** for quick start
 - See **DEPLOYMENT.md** for production setup
 
 ### Troubleshooting
+
 - Run `./bind-helper.sh` for helper commands
 - Check logs with `./bind-helper.sh logs`
 - Test zones with `./bind-helper.sh test-zone <name>`
 
 ### Testing
+
 - Run `node test-bind.js` for integration tests
 - Use `dig @localhost <zone> ANY` for DNS tests
 
@@ -430,6 +467,7 @@ pm2 logs ndash                     # Follow app logs
 ## 📞 Support
 
 For questions or issues:
+
 1. Check documentation files
 2. Run `./bind-helper.sh` for help
 3. Review logs with helper script
@@ -442,7 +480,7 @@ For questions or issues:
 ```
 Server:  http://localhost:3000
 Status:  🟢 Running
-Bind:    🟢 Integrated  
+Bind:    🟢 Integrated
 Zones:   2 active
 Tests:   ✅ All passing
 ```
@@ -451,5 +489,5 @@ Tests:   ✅ All passing
 
 ---
 
-*Last Updated: November 14, 2025*  
-*Project: NDash - Bind DNS Management Dashboard*
+_Last Updated: November 14, 2025_  
+_Project: NDash - Bind DNS Management Dashboard_

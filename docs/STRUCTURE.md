@@ -60,9 +60,11 @@
 ### Backend Routes
 
 #### Dashboard (`routes/dashboard.js`)
+
 - `GET /` - Main dashboard with statistics and overview
 
 #### Zones Management (`routes/zones.js`)
+
 - `GET /zones` - List all DNS zones
 - `GET /zones/:id` - View zone details
 - `GET /zones/new/create` - Create new zone form
@@ -70,6 +72,7 @@
 - `POST /zones/:id/delete` - Delete zone
 
 #### Records Management (`routes/records.js`)
+
 - `GET /records/zone/:zoneId` - List records for a zone
 - `GET /records/zone/:zoneId/new` - Add new record form
 - `POST /records/zone/:zoneId` - Create new record
@@ -78,6 +81,7 @@
 ### Frontend Views
 
 #### Layout Structure
+
 ```
 ┌─────────────────────────────────────────────┐
 │ Sidebar │ Header                            │
@@ -90,12 +94,14 @@
 ```
 
 #### Dashboard Components
+
 - Quick Actions Grid (6 action cards)
 - Statistics Cards (4 metric cards)
 - Recent Zones List
 - Recent Activities Timeline
 
 #### Zone Management
+
 - Zones List Table
 - Zone Detail View
 - Zone Creation Form
@@ -104,11 +110,13 @@
 ### Styling
 
 #### CSS Framework Stack
+
 - Tailwind CSS 2.2.19 (via CDN)
 - Custom CSS (`public/css/style.css`)
 - Font Awesome 6.4.0 (icons)
 
 #### Design System
+
 - **Primary Color**: Blue (#3b82f6)
 - **Sidebar**: Dark gradient (gray-900 to gray-800)
 - **Cards**: White with subtle shadows
@@ -118,6 +126,7 @@
 ### Data Model
 
 #### Zone Object
+
 ```javascript
 {
     id: Number,
@@ -131,6 +140,7 @@
 ```
 
 #### Record Object
+
 ```javascript
 {
     id: Number,
@@ -144,6 +154,7 @@
 ```
 
 #### Activity Object
+
 ```javascript
 {
     id: Number,
@@ -157,6 +168,7 @@
 ## Features Overview
 
 ### ✅ Implemented
+
 - Dashboard with statistics
 - Zone listing and creation
 - Record management (add, delete)
@@ -166,12 +178,14 @@
 - Modern UI with Shadcn-inspired design
 
 ### 🚧 Ready for Integration
+
 - Bind zone file reading/writing
 - Zone file validation
 - Bind service reload
 - SOA record management
 
 ### 🔮 Future Enhancements
+
 - User authentication
 - Role-based access control
 - Real-time DNS query testing
@@ -184,6 +198,7 @@
 ## Technology Stack
 
 ### Backend
+
 - **Runtime**: Node.js
 - **Framework**: Express.js 4.18.2
 - **Template Engine**: EJS 3.1.9
@@ -192,17 +207,20 @@
 - **Date Handling**: Moment.js 2.29.4
 
 ### Frontend
+
 - **CSS Framework**: Tailwind CSS 2.2.19
 - **Icons**: Font Awesome 6.4.0
 - **JavaScript**: Vanilla ES6+
 
 ### Development
+
 - **Dev Server**: Nodemon 3.0.2
 - **Package Manager**: npm
 
 ## Configuration
 
 ### Environment Variables
+
 ```env
 NODE_ENV=production
 PORT=3000
@@ -212,6 +230,7 @@ BIND_CONF_PATH=/etc/bind/named.conf.local
 ```
 
 ### Default Settings
+
 - **Port**: 3000
 - **TTL**: 3600 seconds
 - **Session**: 24 hours
@@ -238,11 +257,13 @@ GET    /api/bind/status        - Check Bind status
 ## Security Considerations
 
 ### Current Implementation
+
 - Session-based tracking
 - Form validation on client-side
 - Delete confirmations
 
 ### Production Requirements
+
 - [ ] User authentication
 - [ ] HTTPS/TLS
 - [ ] CSRF protection
@@ -255,6 +276,7 @@ GET    /api/bind/status        - Check Bind status
 ## Performance
 
 ### Optimization Strategies
+
 - Static asset caching
 - Gzip compression
 - CDN for external libraries
@@ -262,6 +284,7 @@ GET    /api/bind/status        - Check Bind status
 - Lazy loading for large zone lists
 
 ### Monitoring
+
 - PM2 process management
 - Log rotation
 - Error tracking

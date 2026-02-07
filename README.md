@@ -1,18 +1,18 @@
 # NDash - Unbound DNS Management Dashboard
 
-NDash adalah aplikasi web untuk mengelola Unbound DNS dengan antarmuka yang modern dan mudah digunakan. Aplikasi ini dibangun dengan Express.js backend dan EJS templating, dengan desain yang terinspirasi dari IDVE.
+NDash is a web application for managing Unbound DNS with a modern and user-friendly interface. This application is built with Express.js backend and EJS templating, with a design inspired by IDVE.
 
-## Fitur
+## Features
 
-- 📊 **Dashboard Informatif** - Tampilan statistik DNS zone dan records
-- 🌐 **Manajemen DNS Zones** - Buat, lihat, edit, dan hapus DNS local zones
-- 📝 **Manajemen DNS Records** - Kelola berbagai tipe DNS records (A, AAAA, CNAME, MX, TXT, dll)
-- 🎨 **UI Modern** - Desain responsif dengan Tailwind CSS dan Shadcn-UI inspired
-- ⚡ **Quick Actions** - Akses cepat ke fungsi-fungsi umum
-- 📱 **Responsive Design** - Bekerja dengan baik di desktop dan mobile
-- 🔄 **Cache Management** - Flush zone cache dan monitoring
+- 📊 **Informative Dashboard** - Display DNS zone and record statistics
+- 🌐 **DNS Zone Management** - Create, view, edit, and delete DNS local zones
+- 📝 **DNS Record Management** - Manage various DNS record types (A, AAAA, CNAME, MX, TXT, etc.)
+- 🎨 **Modern UI** - Responsive design with Tailwind CSS and Shadcn-UI inspired
+- ⚡ **Quick Actions** - Quick access to common functions
+- 📱 **Responsive Design** - Works well on desktop and mobile
+- 🔄 **Cache Management** - Flush zone cache and monitoring
 
-## Teknologi yang Digunakan
+## Technologies Used
 
 - **Backend**: Express.js
 - **Template Engine**: EJS
@@ -20,7 +20,7 @@ NDash adalah aplikasi web untuk mengelola Unbound DNS dengan antarmuka yang mode
 - **Icons**: Font Awesome
 - **Date Handling**: Moment.js
 
-## Instalasi
+## Installation
 
 ### 1. Install Dependencies
 
@@ -29,29 +29,31 @@ cd /opt/ndash
 npm install
 ```
 
-### 2. Konfigurasi (Opsional)
+### 2. Configuration (Optional)
 
-Edit file `server.js` untuk mengubah port atau konfigurasi lainnya:
+Edit the `server.js` file to change the port or other configurations:
 
 ```javascript
 const PORT = process.env.PORT || 3000;
 ```
 
-### 3. Jalankan Aplikasi
+### 3. Run the Application
 
-**Mode Production:**
+**Production Mode:**
+
 ```bash
 npm start
 ```
 
-**Mode Development (dengan auto-reload):**
+**Development Mode (with auto-reload):**
+
 ```bash
 npm run dev
 ```
 
-Aplikasi akan berjalan di `http://localhost:3000`
+The application will run at `http://localhost:3000`
 
-## Struktur Direktori
+## Directory Structure
 
 ```
 /opt/ndash/
@@ -84,27 +86,31 @@ Aplikasi akan berjalan di `http://localhost:3000`
 └── README.md
 ```
 
-## Penggunaan
+## Usage
 
 ### Dashboard
-- Akses halaman utama untuk melihat overview DNS zones dan statistics
-- Quick actions untuk akses cepat ke fungsi-fungsi utama
-- Lihat aktivitas terbaru dan zona yang baru dibuat
 
-### Manajemen DNS Zones
-1. Klik **"DNS Zones"** di sidebar atau **"View Zones"** di quick actions
-2. Untuk membuat zone baru, klik **"Create New Zone"**
-3. Isi form dengan nama domain dan tipe zone
-4. Klik zone untuk melihat detail dan record-nya
+- Access the main page to view DNS zones overview and statistics
+- Quick actions for fast access to main functions
+- View recent activities and newly created zones
 
-### Manajemen DNS Records
-1. Buka detail zone yang ingin dikelola
-2. Klik **"Add Record"** untuk menambah record baru
-3. Pilih tipe record (A, AAAA, CNAME, MX, TXT, dll)
-4. Isi nilai dan konfigurasi record
-5. Record akan otomatis muncul di list
+### DNS Zone Management
 
-### Tipe DNS Records yang Didukung
+1. Click **"DNS Zones"** in the sidebar or **"View Zones"** in quick actions
+2. To create a new zone, click **"Create New Zone"**
+3. Fill in the form with domain name and zone type
+4. Click on a zone to view details and its records
+
+### DNS Record Management
+
+1. Open the zone detail you want to manage
+2. Click **"Add Record"** to add a new record
+3. Select record type (A, AAAA, CNAME, MX, TXT, etc.)
+4. Fill in the value and record configuration
+5. The record will automatically appear in the list
+
+### Supported DNS Record Types
+
 - **A** - IPv4 Address
 - **AAAA** - IPv6 Address
 - **CNAME** - Canonical Name
@@ -114,74 +120,80 @@ Aplikasi akan berjalan di `http://localhost:3000`
 - **PTR** - Pointer
 - **SRV** - Service
 
-## Integrasi dengan Bind
+## Integration with Bind
 
-> **Catatan**: Versi saat ini menggunakan data storage simulasi. Untuk integrasi penuh dengan Bind DNS server, Anda perlu:
+> **Note**: The current version uses simulated data storage. For full integration with Bind DNS server, you need to:
 
-1. Menambahkan modul untuk membaca/menulis zone files Bind
-2. Mengimplementasikan fungsi untuk reload Bind service
-3. Menambahkan validasi zone syntax
-4. Setup permission untuk mengakses direktori Bind
+1. Add a module to read/write Bind zone files
+2. Implement functions to reload Bind service
+3. Add zone syntax validation
+4. Setup permissions to access Bind directory
 
-### Contoh Integrasi (Future Enhancement):
+### Integration Example (Future Enhancement):
 
 ```javascript
-// Membaca zone file
-const fs = require('fs-extra');
-const zoneContent = await fs.readFile('/etc/bind/zones/db.example.com', 'utf8');
+// Read zone file
+const fs = require("fs-extra");
+const zoneContent = await fs.readFile("/etc/bind/zones/db.example.com", "utf8");
 
 // Reload Bind
-const { exec } = require('child_process');
-exec('rndc reload', (error, stdout, stderr) => {
-    if (error) {
-        console.error('Error reloading Bind:', error);
-    }
+const { exec } = require("child_process");
+exec("rndc reload", (error, stdout, stderr) => {
+  if (error) {
+    console.error("Error reloading Bind:", error);
+  }
 });
 ```
 
-## Keamanan
+## Security
 
-⚠️ **Penting untuk Production:**
+⚠️ **Important for Production:**
 
-1. Implementasikan autentikasi dan authorization
-2. Gunakan HTTPS
-3. Validasi semua input dari user
-4. Set proper file permissions untuk zone files
-5. Implementasikan rate limiting
+1. Implement authentication and authorization
+2. Use HTTPS
+3. Validate all user input
+4. Set proper file permissions for zone files
+5. Implement rate limiting
 6. Enable CSRF protection
-7. Audit log untuk semua perubahan
+7. Audit log for all changes
 
 ## Customization
 
-### Mengubah Warna Theme
-Edit file `/public/css/style.css` untuk menyesuaikan warna:
+### Changing Theme Colors
+
+Edit the `/public/css/style.css` file to customize colors:
 
 ```css
 .btn-primary {
-    background: linear-gradient(135deg, #your-color 0%, #your-color-dark 100%);
+  background: linear-gradient(135deg, #your-color 0%, #your-color-dark 100%);
 }
 ```
 
-### Menambah Menu Sidebar
-Edit file `/views/partials/sidebar.ejs`:
+### Adding Sidebar Menu
+
+Edit the `/views/partials/sidebar.ejs` file:
 
 ```html
 <a href="/new-menu" class="nav-item">
-    <i class="fas fa-icon-name"></i>
-    <span>Menu Name</span>
+  <i class="fas fa-icon-name"></i>
+  <span>Menu Name</span>
 </a>
 ```
 
 ## Troubleshooting
 
-### Port sudah digunakan
-Ubah port di `server.js` atau set environment variable:
+### Port already in use
+
+Change the port in `server.js` or set environment variable:
+
 ```bash
 PORT=3001 npm start
 ```
 
 ### Module not found
-Install ulang dependencies:
+
+Reinstall dependencies:
+
 ```bash
 rm -rf node_modules
 npm install
@@ -189,27 +201,27 @@ npm install
 
 ## Roadmap
 
-- [ ] Autentikasi user dan role-based access
-- [ ] Integrasi langsung dengan Bind9 zone files
+- [ ] User authentication and role-based access
+- [ ] Direct integration with Bind9 zone files
 - [ ] Export/Import zone files
 - [ ] DNS query testing tools
-- [ ] Backup dan restore zones
-- [ ] Monitoring query statistics
+- [ ] Backup and restore zones
+- [ ] Query statistics monitoring
 - [ ] Multi-server management
-- [ ] API documentation dengan Swagger
+- [ ] API documentation with Swagger
 
-## Kontribusi
+## Contributing
 
-Kontribusi sangat diterima! Silakan buat pull request atau laporkan issues.
+Contributions are very welcome! Please create a pull request or report issues.
 
-## Lisensi
+## License
 
 ISC License
 
 ## Support
 
-Untuk pertanyaan atau masalah, silakan buat issue di repository ini.
+For questions or issues, please create an issue in this repository.
 
 ---
 
-**Dibuat dengan ❤️ menggunakan Express.js dan EJS**
+**Built with ❤️ using Express.js and EJS**

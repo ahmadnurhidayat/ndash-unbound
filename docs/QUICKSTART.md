@@ -1,93 +1,109 @@
 # NDash - Quick Start Guide
 
-## 🚀 Instalasi Cepat
+## 🚀 Quick Installation
 
 ### 1. Clone/Copy Project
-Pastikan semua file sudah ada di `/opt/ndash`
+
+Ensure all files are in `/opt/ndash`
 
 ### 2. Install Dependencies
+
 ```bash
 cd /opt/ndash
 npm install
 ```
 
-### 3. Jalankan Aplikasi
+### 3. Run the Application
+
 ```bash
 npm start
 ```
 
-Atau gunakan script:
+Or use the script:
+
 ```bash
 ./start.sh
 ```
 
-### 4. Akses Dashboard
-Buka browser dan akses:
+### 4. Access Dashboard
+
+Open browser and access:
+
 ```
 http://localhost:3000
 ```
 
-## 📋 Panduan Penggunaan
+## 📋 Usage Guide
 
-### Dashboard Utama
+### Main Dashboard
+
 - **URL**: `http://localhost:3000/`
-- Menampilkan statistik DNS zones dan records
-- Quick actions untuk akses cepat
-- Recent activities dan zones terbaru
+- Displays DNS zones and records statistics
+- Quick actions for fast access
+- Recent activities and latest zones
 
-### Mengelola DNS Zones
+### Managing DNS Zones
 
-#### Melihat Semua Zones
-1. Klik **"DNS Zones"** di sidebar
-2. Atau klik **"View Zones"** di quick actions
+#### View All Zones
 
-#### Membuat Zone Baru
-1. Klik **"Create New Zone"** atau **"Create Zone"** di quick actions
-2. Isi form:
-   - **Zone Name**: Nama domain (contoh: example.com)
-   - **Zone Type**: Pilih master/slave/forward
-   - **Zone File Path**: (opsional) akan otomatis jika kosong
-3. Klik **"Create Zone"**
+1. Click **"DNS Zones"** in the sidebar
+2. Or click **"View Zones"** in quick actions
 
-#### Melihat Detail Zone
-1. Di halaman DNS Zones, klik icon mata (👁️) pada zone
-2. Akan menampilkan detail zone dan semua records-nya
+#### Create New Zone
 
-#### Menghapus Zone
-1. Di halaman DNS Zones, klik icon trash (🗑️)
-2. Konfirmasi penghapusan
+1. Click **"Create New Zone"** or **"Create Zone"** in quick actions
+2. Fill in the form:
+   - **Zone Name**: Domain name (example: example.com)
+   - **Zone Type**: Select master/slave/forward
+   - **Zone File Path**: (optional) will be automatic if empty
+3. Click **"Create Zone"**
 
-### Mengelola DNS Records
+#### View Zone Details
 
-#### Menambah Record Baru
-1. Buka detail zone
-2. Klik **"Add Record"**
-3. Isi form:
-   - **Record Name**: @ untuk root, atau subdomain (www, mail, dll)
+1. On the DNS Zones page, click the eye icon (👁️) on the zone
+2. Will display zone details and all its records
+
+#### Delete Zone
+
+1. On the DNS Zones page, click the trash icon (🗑️)
+2. Confirm deletion
+
+### Managing DNS Records
+
+#### Add New Record
+
+1. Open zone detail
+2. Click **"Add Record"**
+3. Fill in the form:
+   - **Record Name**: @ for root, or subdomain (www, mail, etc.)
    - **Record Type**: A, AAAA, CNAME, MX, TXT, NS, PTR, SRV
-   - **Value**: IP address atau hostname
-   - **TTL**: Time to live dalam detik (default: 3600)
-   - **Priority**: Untuk MX dan SRV records
-4. Klik **"Add Record"**
+   - **Value**: IP address or hostname
+   - **TTL**: Time to live in seconds (default: 3600)
+   - **Priority**: For MX and SRV records
+4. Click **"Add Record"**
 
-#### Menghapus Record
-1. Di halaman detail zone
-2. Klik icon trash pada record yang ingin dihapus
-3. Konfirmasi penghapusan
+#### Delete Record
 
-## 🎨 Fitur UI
+1. On the zone detail page
+2. Click the trash icon on the record you want to delete
+3. Confirm deletion
+
+## 🎨 UI Features
 
 ### Sidebar Navigation
-- **Dashboard**: Halaman utama
-- **DNS Zones**: Kelola zones
-- **Create Zone**: Buat zone baru
+
+- **Dashboard**: Main page
+- **DNS Zones**: Manage zones
+- **Create Zone**: Create new zone
 - **Reload Bind**: Reload Bind service (coming soon)
-- **Settings**: Pengaturan (coming soon)
+- **Settings**: Settings (coming soon)
 - **Monitoring**: Monitor DNS (coming soon)
-- **Activity Log**: Log aktivitas (coming soon)
+- **Activity Log**: Activity log (coming soon)
 
 ### Quick Actions
-6 tombol akses cepat di dashboard:
+
+6 quick access buttons on the dashboard:
+
 1. Create Zone
 2. View Zones
 3. All Records
@@ -96,101 +112,110 @@ http://localhost:3000
 6. Settings
 
 ### Status Indicators
-- 🟢 **Active**: Zone aktif
-- 🟡 **Inactive**: Zone tidak aktif
-- Badge warna untuk tipe record (A, CNAME, MX, dll)
 
-## 🔧 Tipe DNS Records yang Didukung
+- 🟢 **Active**: Active zone
+- 🟡 **Inactive**: Inactive zone
+- Color badges for record types (A, CNAME, MX, etc.)
 
-| Type | Deskripsi | Contoh Value |
-|------|-----------|--------------|
-| A | IPv4 Address | 192.168.1.1 |
-| AAAA | IPv6 Address | 2001:db8::1 |
-| CNAME | Canonical Name | www.example.com |
-| MX | Mail Exchange | mail.example.com |
-| TXT | Text Record | "v=spf1 mx -all" |
-| NS | Name Server | ns1.example.com |
-| PTR | Pointer | example.com |
-| SRV | Service | 0 5 5060 sipserver.example.com |
+## 🔧 Supported DNS Record Types
 
-## 📊 Halaman yang Tersedia
+| Type  | Description    | Example Value                  |
+| ----- | -------------- | ------------------------------ |
+| A     | IPv4 Address   | 192.168.1.1                    |
+| AAAA  | IPv6 Address   | 2001:db8::1                    |
+| CNAME | Canonical Name | www.example.com                |
+| MX    | Mail Exchange  | mail.example.com               |
+| TXT   | Text Record    | "v=spf1 mx -all"               |
+| NS    | Name Server    | ns1.example.com                |
+| PTR   | Pointer        | example.com                    |
+| SRV   | Service        | 0 5 5060 sipserver.example.com |
+
+## 📊 Available Pages
 
 1. **Dashboard** (`/`)
-   - Overview statistik
+   - Overview statistics
    - Quick actions
    - Recent zones
    - Recent activities
 
 2. **DNS Zones List** (`/zones`)
-   - Tabel semua zones
+   - Table of all zones
    - Status, type, record count
    - Actions (view, edit, delete)
 
 3. **Zone Detail** (`/zones/:id`)
-   - Informasi zone
-   - List semua records
+   - Zone information
+   - List of all records
    - Add/delete records
 
 4. **Create Zone** (`/zones/new/create`)
-   - Form pembuatan zone baru
+   - New zone creation form
 
 5. **Add Record** (`/records/zone/:zoneId/new`)
-   - Form penambahan record baru
+   - New record addition form
 
-## ⚙️ Konfigurasi
+## ⚙️ Configuration
 
-### Mengubah Port
-Edit `server.js` atau set environment variable:
+### Change Port
+
+Edit `server.js` or set environment variable:
+
 ```bash
 PORT=8080 npm start
 ```
 
 ### Data Storage
-Data saat ini disimpan di memory (`data/storage.js`)
-Untuk production, integrasikan dengan Bind zone files
 
-## 🔒 Keamanan
+Data is currently stored in memory (`data/storage.js`)
+For production, integrate with Bind zone files
 
-⚠️ **Untuk Development Only**
-Aplikasi ini belum termasuk:
-- Autentikasi user
+## 🔒 Security
+
+⚠️ **For Development Only**
+This application does not yet include:
+
+- User authentication
 - Authorization
 - SSL/HTTPS
-- Input validation lengkap
+- Complete input validation
 
-Untuk production, lihat `DEPLOYMENT.md`
+For production, see `DEPLOYMENT.md`
 
 ## 🐛 Troubleshooting
 
 ### Port Already in Use
+
 ```bash
-# Gunakan port lain
+# Use another port
 PORT=3001 npm start
 ```
 
 ### Module Not Found
+
 ```bash
-# Install ulang dependencies
+# Reinstall dependencies
 rm -rf node_modules
 npm install
 ```
 
 ### Permission Denied (Bind files)
+
 ```bash
-# Untuk integrasi Bind, butuh akses ke /etc/bind
+# For Bind integration, need access to /etc/bind
 sudo chown -R $USER:$USER /etc/bind/zones
 ```
 
 ## 📝 Tips
 
-1. **Backup Data**: Belum ada auto-backup, backup manual `data/storage.js`
-2. **Testing**: Test di environment development dulu
-3. **Monitoring**: Gunakan `pm2 monit` untuk monitoring
-4. **Logs**: Check logs dengan `pm2 logs ndash`
+1. **Backup Data**: No auto-backup yet, manually backup `data/storage.js`
+2. **Testing**: Test in development environment first
+3. **Monitoring**: Use `pm2 monit` for monitoring
+4. **Logs**: Check logs with `pm2 logs ndash`
 
-## 🆘 Bantuan
+## 🆘 Help
 
-### Command Berguna
+### Useful Commands
+
 ```bash
 # Start server
 npm start
@@ -198,40 +223,41 @@ npm start
 # Development mode (auto-reload)
 npm run dev
 
-# Check status (jika pakai systemd)
+# Check status (if using systemd)
 sudo systemctl status ndash
 
-# View logs (jika pakai pm2)
+# View logs (if using pm2)
 pm2 logs ndash
 
 # Restart (pm2)
 pm2 restart ndash
 ```
 
-### File Penting
+### Important Files
+
 - `server.js` - Main server
 - `data/storage.js` - Data storage
-- `config.js` - Konfigurasi
+- `config.js` - Configuration
 - `routes/` - API routes
 - `views/` - EJS templates
 - `public/css/style.css` - Styling
 
-## 📚 Dokumentasi Lengkap
+## 📚 Complete Documentation
 
-- `README.md` - Dokumentasi utama
-- `DEPLOYMENT.md` - Panduan deployment production
-- `STRUCTURE.md` - Struktur project detail
+- `README.md` - Main documentation
+- `DEPLOYMENT.md` - Production deployment guide
+- `STRUCTURE.md` - Detailed project structure
 
 ## 🎯 Next Steps
 
-1. ✅ Install dan jalankan aplikasi
-2. ✅ Explore dashboard dan UI
-3. ✅ Buat zone dan records percobaan
-4. 📝 Integrasikan dengan Bind (optional)
-5. 🚀 Deploy ke production (ikuti DEPLOYMENT.md)
+1. ✅ Install and run the application
+2. ✅ Explore dashboard and UI
+3. ✅ Create test zones and records
+4. 📝 Integrate with Bind (optional)
+5. 🚀 Deploy to production (follow DEPLOYMENT.md)
 
 ---
 
-**Selamat menggunakan NDash! 🎉**
+**Enjoy using NDash! 🎉**
 
-Untuk pertanyaan atau masalah, buka issue atau hubungi administrator.
+For questions or issues, open an issue or contact the administrator.
